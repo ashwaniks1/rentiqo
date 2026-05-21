@@ -1,0 +1,17 @@
+{
+  "name": "rentiqo-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w @rentiqo/backend",
+    "dev:mobile": "npm run dev -w @rentiqo/mobile",
+    "dev:search": "npm run dev -w @rentiqo/search-service",
+    "build": "npm run build -ws --if-present",
+    "typecheck": "npm run typecheck -ws --if-present"
+  }
+}
