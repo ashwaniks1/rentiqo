@@ -4,7 +4,7 @@ This document is the final go/no-go artifact for production cutover.
 
 ## 1) Executive status
 
-- **Current stage:** Stage 5 in progress (Quality + Compliance)
+- **Current stage:** Stage 6 in progress (Production Cutover Preparation)
 - **Readiness verdict:** Not ready for production (expected at this stage)
 - **Blocking reason:** Engineering implementation, quality validation, security hardening, and compliance execution pending
 
@@ -18,7 +18,7 @@ This document is the final go/no-go artifact for production cutover.
 | Stage 3 - Data + Platform Core | Complete (scaffold baseline) | Data/backend/devops specs and service scaffolds delivered |
 | Stage 4 - Product Experience Build | In progress | Scaffolding complete; feature integration pending |
 | Stage 5 - Quality + Compliance | In progress | QA/compliance/growth deliverables and CI test gates delivered |
-| Stage 6 - Production Cutover | Not started | Pending all prior gates |
+| Stage 6 - Production Cutover | In progress | Cutover plan/checklists and release verification script delivered |
 
 ## 3) Critical readiness checks
 
@@ -27,10 +27,10 @@ This document is the final go/no-go artifact for production cutover.
 | Product spec | Approved PRD and MVP scope | Complete | Product Manager Agent |
 | Architecture | Approved system architecture and API contracts | Complete | Solution Architect Agent |
 | Engineering | MVP implementation complete | In progress (scaffolds delivered) | Backend + Mobile Agents |
-| Quality | Critical path e2e tests passing | In progress (CI + unit baseline active) | QA Agent |
+| Quality | Critical path e2e tests passing | In progress (CI + unit baseline active, e2e pending) | QA Agent |
 | Security | Baseline controls + no critical issues | In progress (controls documented) | DevSecOps Agent |
 | Compliance | Privacy/licensing obligations validated | In progress (policies/checklists delivered) | Compliance Agent |
-| Operations | SLOs, alerting, runbooks, on-call ready | In progress (runbooks/SLO docs ready) | DevSecOps + Program |
+| Operations | SLOs, alerting, runbooks, on-call ready | In progress (runbooks + cutover ops package ready) | DevSecOps + Program |
 
 ## 4) Open blockers
 
@@ -42,7 +42,7 @@ This document is the final go/no-go artifact for production cutover.
 
 1. Implement full Stage 4 feature integrations across mobile, backend, and search services.
 2. Stand up staging environment with observability and security controls enabled.
-3. Execute Stage 6 production cutover preparation with evidence-based quality/compliance signoff.
+3. Run staging e2e suite and complete evidence in go/no-go log before production decision.
 
 ## 6) Final decision section (for future use)
 

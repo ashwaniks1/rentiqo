@@ -10,3 +10,7 @@ Stage 4 implementation scaffolding now exists for:
 - `apps/mobile` (Expo React Native mobile baseline)
 - `services/search` (ranking/alert/relevance baseline)
 - `packages/contracts` (shared TypeScript contracts)
+
+Release-readiness verification command:
+
+- `npm run release:verify`
