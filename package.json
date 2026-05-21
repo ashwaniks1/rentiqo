@@ -12,6 +12,7 @@
     "dev:mobile": "npm run dev -w @rentiqo/mobile",
     "dev:search": "npm run dev -w @rentiqo/search-service",
     "build": "npm run build -ws --if-present",
-    "typecheck": "npm run typecheck -ws --if-present"
+    "typecheck": "npm run typecheck -ws --if-present",
+    "test": "npm run test -w @rentiqo/backend && npm run test -w @rentiqo/search-service"
   }
 }

@@ -5,6 +5,10 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist",
     "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@rentiqo/contracts": ["../../packages/contracts/src/index.ts"]
+    },
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true
