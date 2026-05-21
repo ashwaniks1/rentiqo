@@ -1,0 +1,20 @@
+{
+  "name": "@rentiqo/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start",
+    "build": "echo \"Use EAS build pipeline for production mobile builds\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "expo": "^54.0.21",
+    "react": "^19.2.0",
+    "react-native": "^0.82.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "typescript": "^5.9.3"
+  }
+}
