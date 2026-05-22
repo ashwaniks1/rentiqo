@@ -11,37 +11,37 @@ Status keys:
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/auth/register` | Ready for implementation | Requires auth provider adapter |
-| POST `/v1/auth/login` | Ready for implementation | Must include brute-force protections |
-| POST `/v1/auth/refresh` | Ready for implementation | Token rotation strategy defined |
-| GET `/v1/me` | Ready for implementation | Role-aware payload |
-| PATCH `/v1/me/preferences` | Ready for implementation | Preference schema finalized |
+| POST `/v1/auth/register` | Done | In-memory auth provider, token issuance, and audit hooks implemented |
+| POST `/v1/auth/login` | Done | Credential login, session creation, and audit hooks implemented |
+| POST `/v1/auth/refresh` | Done | Refresh token rotation and invalid token handling implemented |
+| GET `/v1/me` | Done | Authenticated profile payload with RBAC guard scaffolding |
+| PATCH `/v1/me/preferences` | Done | Preference patch handling with audit event logging |
 
 ## Search and listing APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/search/listings` | Ready for implementation | Depends on index schema and filters |
-| GET `/v1/listings/{listingId}` | Ready for implementation | Depends on canonical listing model |
-| GET `/v1/listings/{listingId}/history` | Ready for implementation | History event model documented |
+| POST `/v1/search/listings` | Done | Backend now calls search-service query pipeline over seeded dataset |
+| GET `/v1/listings/{listingId}` | Done | Listing data source abstraction wired to seeded canonical listing records |
+| GET `/v1/listings/{listingId}/history` | Done | History timeline from listing data source implemented |
 
 ## Saved state APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/saved-homes` | Ready for implementation | Requires idempotency consideration |
-| DELETE `/v1/saved-homes/{listingId}` | Ready for implementation | Soft-delete policy TBD |
-| GET `/v1/saved-homes` | Ready for implementation | Cursor pagination required |
-| POST `/v1/saved-searches` | Ready for implementation | Alert channel validation needed |
-| PATCH `/v1/saved-searches/{savedSearchId}` | Ready for implementation | Partial update semantics required |
-| DELETE `/v1/saved-searches/{savedSearchId}` | Ready for implementation | Cascade behavior defined in DB policy |
+| POST `/v1/saved-homes` | Done | Create saved-home endpoint implemented with auth and audit hooks |
+| DELETE `/v1/saved-homes/{listingId}` | Done | Delete saved-home endpoint implemented |
+| GET `/v1/saved-homes` | Done | Saved-home list endpoint implemented with listing summary hydration |
+| POST `/v1/saved-searches` | Done | Saved-search create endpoint implemented with channels and query payload |
+| PATCH `/v1/saved-searches/{savedSearchId}` | Done | Partial update semantics implemented |
+| DELETE `/v1/saved-searches/{savedSearchId}` | Done | Delete endpoint implemented with not-found handling |
 
 ## Engagement APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/listings/{listingId}/contact-agent` | Ready for implementation | Event emission required |
-| POST `/v1/listings/{listingId}/tour-requests` | Ready for implementation | Time window validation required |
+| POST `/v1/listings/{listingId}/contact-agent` | Done | Idempotency-key enforcement and lead creation implemented |
+| POST `/v1/listings/{listingId}/tour-requests` | Done | Idempotency-key enforcement and tour request creation implemented |
 | GET `/v1/me/leads` | Ready for implementation | Consumer history view |
 
 ## Agent APIs
@@ -63,6 +63,6 @@ Status keys:
 
 ## Next milestones
 
-1. Backend code scaffolding and route skeleton generation.
-2. Contract test harness for all v1 endpoints.
-3. Staging deployment with smoke tests.
+1. Replace in-memory stores with persistent adapters (DB/cache) while preserving endpoint contracts.
+2. Add dedicated contract test harness for all v1 endpoints and error envelopes.
+3. Extend RBAC guard scaffolding to agent/admin endpoints and wire policy config.
