@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
-import { initializeStore } from "../data/store.js";
 import { createHttpServer } from "../http/server.js";
+import { getRepository } from "../repositories/app-repository.js";
 
 async function jsonRequest<T>(baseUrl: string, path: string, options: RequestInit = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -17,7 +17,7 @@ async function jsonRequest<T>(baseUrl: string, path: string, options: RequestIni
 }
 
 test("critical path: login -> search -> listing detail -> save -> contact", async () => {
-  initializeStore();
+  await getRepository().initialize();
   const server = createHttpServer();
   await new Promise<void>((resolve) => server.listen(0, resolve));
   const address = server.address() as AddressInfo;

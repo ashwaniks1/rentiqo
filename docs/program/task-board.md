@@ -55,7 +55,7 @@ This board is the single source of truth for multi-agent execution status.
 | BL-001 | B1, B2 | Backend/search integrations not completed yet | Backend/Search owners | Complete Wave A and publish staging endpoints | Closed |
 | BL-002 | B2, D1 | Staging e2e pipeline not yet implemented | QA + DevSecOps | Add staging e2e runner and CI gate | Open |
 | BL-003 | D1 | Compliance evidence still policy-heavy, limited operational proof | Compliance owner | Build evidence log from actual control execution | In progress |
-| BL-004 | D1 | Production persistence and hardened auth controls still pending | Backend + DevSecOps | Replace in-memory persistence and close auth hardening checklist | Open |
+| BL-004 | D1 | Production persistence and hardened auth controls still pending | Backend + DevSecOps | Postgres repository/migrations implemented; complete Supabase project provisioning + auth hardening checklist | In progress |
 
 ## Update log
 
@@ -64,3 +64,4 @@ This board is the single source of truth for multi-agent execution status.
 | 2026-05-22T00:05:00Z | Program Orchestrator | Initial automation task board created |
 | 2026-05-22T00:08:00Z | Program Orchestrator | Added launch playbook and copy/paste agent prompt pack |
 | 2026-05-22T02:20:00Z | Multi-role implementation agent | Completed A1/A2/C1/C2, advanced B1/B2, and moved D1 into hold review cycle |
+| 2026-05-22T03:30:00Z | Multi-role implementation agent | Added Postgres migrations/repository/env wiring; BL-004 moved to in-progress |

@@ -2,6 +2,16 @@
 
 This document defines initial migration sets for the canonical transactional database.
 
+## Implementation status
+
+- Migration runner implemented in:
+  - `apps/backend/src/db/migrate.ts`
+  - `apps/backend/src/db/run-migrations.ts`
+- Initial schema migration file:
+  - `apps/backend/src/db/migrations/0001_initial_schema.sql`
+- Backend command:
+  - `npm run db:migrate -w @rentiqo/backend`
+
 ## Migration strategy
 
 - Use forward-only, versioned migrations.

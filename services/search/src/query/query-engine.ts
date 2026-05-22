@@ -1,6 +1,6 @@
 import type { ListingSummary, SearchFilters, SearchRequest } from "@rentiqo/contracts";
-import { getListingIndex } from "../data/listing-index.js";
 import { SEARCH_RANKING_VERSION, scoreAndRankListings } from "../ranking/ranker.js";
+import { getListingIndex } from "../data/listing-index.js";
 
 function applyFilters(listings: ListingSummary[], filters: SearchFilters | undefined): ListingSummary[] {
   return listings.filter((listing) => {
@@ -31,8 +31,8 @@ function applyTextQuery(listings: ListingSummary[], query: string | undefined): 
   return listings.filter((listing) => `${listing.city} ${listing.state}`.toLowerCase().includes(normalized));
 }
 
-export function executeSearch(searchRequest: SearchRequest) {
-  const filtered = applyFilters(getListingIndex(), searchRequest.filters);
+export function executeSearch(searchRequest: SearchRequest, listings: ListingSummary[] = getListingIndex()) {
+  const filtered = applyFilters(listings, searchRequest.filters);
   const textMatched = applyTextQuery(filtered, searchRequest.query);
   const ranked = scoreAndRankListings(textMatched, searchRequest.filters);
   return {

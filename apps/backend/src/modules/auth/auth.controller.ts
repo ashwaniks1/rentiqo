@@ -1,6 +1,7 @@
-import { db, createSession, rotateSessionTokens, type Role } from "../../data/store.js";
+import type { Role } from "../../data/store.js";
 import { HttpError } from "../../http/errors.js";
 import type { AuthContext } from "../../http/types.js";
+import { getRepository } from "../../repositories/app-repository.js";
 
 type AuthPayload = {
   accessToken: string;
@@ -16,8 +17,9 @@ type AuthPayload = {
   };
 };
 
-function toAuthPayload(userId: string, accessToken: string, refreshToken: string): AuthPayload {
-  const user = db.users.get(userId);
+async function toAuthPayload(userId: string, accessToken: string, refreshToken: string): Promise<AuthPayload> {
+  const repository = getRepository();
+  const user = await repository.getUserById(userId);
   if (!user) {
     throw new HttpError(404, "USER_NOT_FOUND", "User not found");
   }
@@ -33,73 +35,64 @@ function toAuthPayload(userId: string, accessToken: string, refreshToken: string
   };
 }
 
-export function registerUser(body: unknown): AuthPayload {
+export async function registerUser(body: unknown): Promise<AuthPayload> {
+  const repository = getRepository();
   const payload = body as { email?: string; password?: string; role?: Role };
   if (!payload?.email || !payload?.password) {
     throw new HttpError(400, "INVALID_REQUEST", "email and password are required");
   }
 
-  const emailKey = payload.email.toLowerCase();
-  if (db.usersByEmail.has(emailKey)) {
+  const existing = await repository.getUserByEmail(payload.email);
+  if (existing) {
     throw new HttpError(409, "EMAIL_EXISTS", "Email already registered");
   }
 
-  const userId = `user-${String(db.users.size + 1).padStart(4, "0")}`;
   const role = payload.role === "agent" || payload.role === "admin" ? payload.role : "consumer";
-  db.users.set(userId, {
-    userId,
-    email: payload.email,
-    password: payload.password,
-    role,
-    preferences: {
-      notifications: { push: true, email: true },
-      search: {}
-    }
-  });
-  db.usersByEmail.set(emailKey, userId);
-
-  const session = createSession(userId);
-  return toAuthPayload(userId, session.accessToken, session.refreshToken);
+  const created = await repository.createUser(payload.email, payload.password, role);
+  const session = await repository.createSession(created.userId);
+  return toAuthPayload(created.userId, session.accessToken, session.refreshToken);
 }
 
-export function loginUser(body: unknown): AuthPayload {
+export async function loginUser(body: unknown): Promise<AuthPayload> {
+  const repository = getRepository();
   const payload = body as { email?: string; password?: string };
   if (!payload?.email || !payload?.password) {
     throw new HttpError(400, "INVALID_REQUEST", "email and password are required");
   }
 
-  const userId = db.usersByEmail.get(payload.email.toLowerCase());
-  if (!userId) {
+  const user = await repository.getUserByEmail(payload.email);
+  if (!user) {
     throw new HttpError(401, "INVALID_CREDENTIALS", "Invalid credentials");
   }
 
-  const user = db.users.get(userId);
-  if (!user || user.password !== payload.password) {
+  if (user.password !== payload.password) {
     throw new HttpError(401, "INVALID_CREDENTIALS", "Invalid credentials");
   }
 
-  const session = createSession(userId);
-  return toAuthPayload(userId, session.accessToken, session.refreshToken);
+  const session = await repository.createSession(user.userId);
+  return toAuthPayload(user.userId, session.accessToken, session.refreshToken);
 }
 
-export function refreshSession(body: unknown): AuthPayload {
+export async function refreshSession(body: unknown): Promise<AuthPayload> {
+  const repository = getRepository();
   const payload = body as { refreshToken?: string };
   if (!payload?.refreshToken) {
     throw new HttpError(400, "INVALID_REQUEST", "refreshToken is required");
   }
 
-  const rotated = rotateSessionTokens(payload.refreshToken);
+  const rotated = await repository.rotateSession(payload.refreshToken);
   if (!rotated) {
     throw new HttpError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
   }
   return toAuthPayload(rotated.userId, rotated.accessToken, rotated.refreshToken);
 }
 
-export function getCurrentUser(auth: AuthContext | null) {
+export async function getCurrentUser(auth: AuthContext | null) {
+  const repository = getRepository();
   if (!auth) {
     throw new HttpError(401, "UNAUTHORIZED", "Authentication required");
   }
-  const user = db.users.get(auth.userId);
+  const user = await repository.getUserById(auth.userId);
   if (!user) {
     throw new HttpError(404, "USER_NOT_FOUND", "User not found");
   }
@@ -111,12 +104,13 @@ export function getCurrentUser(auth: AuthContext | null) {
   };
 }
 
-export function updateUserPreferences(auth: AuthContext | null, body: unknown) {
+export async function updateUserPreferences(auth: AuthContext | null, body: unknown) {
+  const repository = getRepository();
   if (!auth) {
     throw new HttpError(401, "UNAUTHORIZED", "Authentication required");
   }
 
-  const user = db.users.get(auth.userId);
+  const user = await repository.getUserById(auth.userId);
   if (!user) {
     throw new HttpError(404, "USER_NOT_FOUND", "User not found");
   }
@@ -126,19 +120,13 @@ export function updateUserPreferences(auth: AuthContext | null, body: unknown) {
     search?: Record<string, unknown>;
   };
 
-  user.preferences = {
-    notifications: {
-      push: payload.notifications?.push ?? user.preferences.notifications.push,
-      email: payload.notifications?.email ?? user.preferences.notifications.email
-    },
-    search: {
-      ...user.preferences.search,
-      ...(payload.search ?? {})
-    }
-  };
+  const updated = await repository.updateUserPreferences(auth.userId, payload);
+  if (!updated) {
+    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+  }
 
   return {
-    userId: user.userId,
-    preferences: user.preferences
+    userId: updated.userId,
+    preferences: updated.preferences
   };
 }

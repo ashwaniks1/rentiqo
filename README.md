@@ -15,6 +15,10 @@ Release-readiness verification command:
 
 - `npm run release:verify`
 
+Database migration command (backend):
+
+- `npm run db:migrate -w @rentiqo/backend`
+
 Agent orchestration entrypoints:
 
 - `docs/program/task-board.md`

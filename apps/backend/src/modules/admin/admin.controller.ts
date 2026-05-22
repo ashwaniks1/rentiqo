@@ -1,16 +1,18 @@
-import { addAuditEvent, db } from "../../data/store.js";
+import { getRepository } from "../../repositories/app-repository.js";
 import { HttpError } from "../../http/errors.js";
 import { requireRole } from "../../http/authz.js";
 import type { AuthContext } from "../../http/types.js";
 
-export function listModerationCases(auth: AuthContext | null) {
+export async function listModerationCases(auth: AuthContext | null) {
+  const repository = getRepository();
   requireRole(auth, ["admin"]);
   return {
-    items: Array.from(db.moderationCases.values())
+    items: await repository.listModerationCases()
   };
 }
 
-export function createModerationCase(auth: AuthContext | null, body: unknown) {
+export async function createModerationCase(auth: AuthContext | null, body: unknown) {
+  const repository = getRepository();
   const context = requireRole(auth, ["admin"]);
   const payload = body as {
     targetType?: "listing" | "user" | "agent";
@@ -22,30 +24,24 @@ export function createModerationCase(auth: AuthContext | null, body: unknown) {
     throw new HttpError(400, "INVALID_REQUEST", "targetType, targetId, reasonCode, and severity are required");
   }
 
-  const caseId = `case-${String(db.moderationCases.size + 1).padStart(4, "0")}`;
-  const timestamp = new Date().toISOString();
-  const record = {
-    caseId,
+  const record = await repository.createModerationCase({
     targetType: payload.targetType,
     targetId: payload.targetId,
     reasonCode: payload.reasonCode,
-    severity: payload.severity,
-    status: "open" as const,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  };
-  db.moderationCases.set(caseId, record);
-  addAuditEvent({
+    severity: payload.severity
+  });
+  await repository.addAuditEvent({
     actorId: context.userId,
     action: "admin.moderation.create",
     targetType: payload.targetType,
     targetId: payload.targetId,
-    details: { caseId, reasonCode: payload.reasonCode, severity: payload.severity }
+    details: { caseId: record.caseId, reasonCode: payload.reasonCode, severity: payload.severity }
   });
   return record;
 }
 
-export function updateModerationCase(auth: AuthContext | null, caseId: string, body: unknown) {
+export async function updateModerationCase(auth: AuthContext | null, caseId: string, body: unknown) {
+  const repository = getRepository();
   const context = requireRole(auth, ["admin"]);
   const payload = body as {
     status?: "open" | "reviewing" | "resolved";
@@ -53,25 +49,12 @@ export function updateModerationCase(auth: AuthContext | null, caseId: string, b
     resolutionNotes?: string;
     reasonForAction?: string;
   };
-  const record = db.moderationCases.get(caseId);
+  const record = await repository.updateModerationCase(caseId, payload);
   if (!record) {
     throw new HttpError(404, "CASE_NOT_FOUND", "Moderation case not found");
   }
-  if (payload.status) {
-    record.status = payload.status;
-  }
-  if (payload.actionTaken) {
-    record.actionTaken = payload.actionTaken;
-  }
-  if (payload.resolutionNotes) {
-    record.resolutionNotes = payload.resolutionNotes;
-  }
-  if (payload.reasonForAction) {
-    record.reasonForAction = payload.reasonForAction;
-  }
-  record.updatedAt = new Date().toISOString();
 
-  addAuditEvent({
+  await repository.addAuditEvent({
     actorId: context.userId,
     action: "admin.moderation.update",
     targetType: "moderation_case",

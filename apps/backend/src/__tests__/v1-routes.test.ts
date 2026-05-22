@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { routeV1 } from "../http/routes/v1.js";
-import { initializeStore } from "../data/store.js";
 import type { RequestContext } from "../http/types.js";
+import { getRepository } from "../repositories/app-repository.js";
 
 function requestContext(method: string, path: string, body?: unknown, authToken?: string): RequestContext {
   return {
@@ -18,39 +18,39 @@ function requestContext(method: string, path: string, body?: unknown, authToken?
   };
 }
 
-initializeStore();
+await getRepository().initialize();
 
-test("GET /v1/health returns ok payload", () => {
-  const result = routeV1(requestContext("GET", "/v1/health"));
+test("GET /v1/health returns ok payload", async () => {
+  const result = await routeV1(requestContext("GET", "/v1/health"));
   assert.equal(result.statusCode, 200);
   const healthBody = result.body as { status?: string };
   assert.equal(healthBody.status, "ok");
 });
 
-test("POST /v1/auth/register creates account and tokens", () => {
-  const result = routeV1(
+test("POST /v1/auth/register creates account and tokens", async () => {
+  const result = await routeV1(
     requestContext("POST", "/v1/auth/register", { email: "new-buyer@rentiqo.dev", password: "password123" })
   );
   assert.equal(result.statusCode, 201);
   assert.equal(Boolean((result.body as { accessToken?: string }).accessToken), true);
 });
 
-test("POST /v1/search/listings returns ranked response", () => {
-  const result = routeV1(requestContext("POST", "/v1/search/listings", { filters: { maxPrice: 500000 } }));
+test("POST /v1/search/listings returns ranked response", async () => {
+  const result = await routeV1(requestContext("POST", "/v1/search/listings", { filters: { maxPrice: 500000 } }));
   assert.equal(result.statusCode, 200);
   const body = result.body as { items: unknown[]; rankingVersion: string };
   assert.equal(Array.isArray(body.items), true);
   assert.equal(body.rankingVersion, "rule-v2");
 });
 
-test("GET /v1/listings/:id returns listing details", () => {
-  const result = routeV1(requestContext("GET", "/v1/listings/listing-1001"));
+test("GET /v1/listings/:id returns listing details", async () => {
+  const result = await routeV1(requestContext("GET", "/v1/listings/listing-1001"));
   assert.equal(result.statusCode, 200);
   assert.equal((result.body as { listingId: string }).listingId, "listing-1001");
 });
 
-test("saved homes flow works for authenticated user", () => {
-  const login = routeV1(
+test("saved homes flow works for authenticated user", async () => {
+  const login = await routeV1(
     requestContext("POST", "/v1/auth/login", { email: "buyer@rentiqo.dev", password: "password123" })
   );
   const token = (login.body as { accessToken: string }).accessToken;
@@ -58,18 +58,18 @@ test("saved homes flow works for authenticated user", () => {
 
   const saveContext = requestContext("POST", "/v1/saved-homes", { listingId: "listing-1001" }, token);
   saveContext.auth = user;
-  const saveResult = routeV1(saveContext);
+  const saveResult = await routeV1(saveContext);
   assert.equal(saveResult.statusCode, 201);
 
   const savedHomesContext = requestContext("GET", "/v1/saved-homes", undefined, token);
   savedHomesContext.auth = user;
-  const listResult = routeV1(savedHomesContext);
+  const listResult = await routeV1(savedHomesContext);
   assert.equal(listResult.statusCode, 200);
   assert.equal((listResult.body as { items: unknown[] }).items.length > 0, true);
 });
 
-test("contact-agent creates lead and agent can read queue", () => {
-  const buyerLogin = routeV1(
+test("contact-agent creates lead and agent can read queue", async () => {
+  const buyerLogin = await routeV1(
     requestContext("POST", "/v1/auth/login", { email: "buyer@rentiqo.dev", password: "password123" })
   );
   const buyerToken = (buyerLogin.body as { accessToken: string }).accessToken;
@@ -83,10 +83,10 @@ test("contact-agent creates lead and agent can read queue", () => {
     buyerToken
   );
   contactContext.auth = buyerUser;
-  const contactResult = routeV1(contactContext);
+  const contactResult = await routeV1(contactContext);
   assert.equal(contactResult.statusCode, 201);
 
-  const agentLogin = routeV1(
+  const agentLogin = await routeV1(
     requestContext("POST", "/v1/auth/login", { email: "agent@rentiqo.dev", password: "password123" })
   );
   const agentToken = (agentLogin.body as { accessToken: string }).accessToken;
@@ -95,13 +95,13 @@ test("contact-agent creates lead and agent can read queue", () => {
   ).user;
   const agentLeadsContext = requestContext("GET", "/v1/agent/me/leads", undefined, agentToken);
   agentLeadsContext.auth = agentUser;
-  const leadQueue = routeV1(agentLeadsContext);
+  const leadQueue = await routeV1(agentLeadsContext);
   assert.equal(leadQueue.statusCode, 200);
   assert.equal((leadQueue.body as { items: unknown[] }).items.length > 0, true);
 });
 
-test("admin moderation endpoints enforce role and produce records", () => {
-  const adminLogin = routeV1(
+test("admin moderation endpoints enforce role and produce records", async () => {
+  const adminLogin = await routeV1(
     requestContext("POST", "/v1/auth/login", { email: "admin@rentiqo.dev", password: "password123" })
   );
   const adminToken = (adminLogin.body as { accessToken: string }).accessToken;
@@ -121,7 +121,7 @@ test("admin moderation endpoints enforce role and produce records", () => {
     adminToken
   );
   createCaseContext.auth = adminUser;
-  const createdCase = routeV1(createCaseContext);
+  const createdCase = await routeV1(createCaseContext);
   assert.equal(createdCase.statusCode, 201);
   assert.equal(Boolean((createdCase.body as { caseId?: string }).caseId), true);
 });

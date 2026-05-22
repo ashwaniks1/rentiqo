@@ -1,20 +1,18 @@
-import { createLead, db } from "../../data/store.js";
+import { getRepository } from "../../repositories/app-repository.js";
 import { HttpError } from "../../http/errors.js";
 import { requireAuth } from "../../http/authz.js";
 import type { AuthContext } from "../../http/types.js";
 
-export function contactAgent(auth: AuthContext | null, listingId: string, body: unknown) {
+export async function contactAgent(auth: AuthContext | null, listingId: string, body: unknown) {
+  const repository = getRepository();
   const context = requireAuth(auth);
   const payload = body as { message?: string; contactPreference?: string };
-  if (!db.listings.has(listingId)) {
-    throw new HttpError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
-  const listing = db.listings.get(listingId);
+  const listing = await repository.getListingDetailById(listingId);
   if (!listing) {
     throw new HttpError(404, "LISTING_NOT_FOUND", "Listing not found");
   }
 
-  const lead = createLead({
+  const lead = await repository.createLead({
     listingId,
     userId: context.userId,
     agentId: listing.agentId,
@@ -29,18 +27,16 @@ export function contactAgent(auth: AuthContext | null, listingId: string, body: 
   };
 }
 
-export function requestTour(auth: AuthContext | null, listingId: string, body: unknown) {
+export async function requestTour(auth: AuthContext | null, listingId: string, body: unknown) {
+  const repository = getRepository();
   const context = requireAuth(auth);
   const payload = body as { preferredWindows?: string[]; notes?: string };
-  if (!db.listings.has(listingId)) {
-    throw new HttpError(404, "LISTING_NOT_FOUND", "Listing not found");
-  }
-  const listing = db.listings.get(listingId);
+  const listing = await repository.getListingDetailById(listingId);
   if (!listing) {
     throw new HttpError(404, "LISTING_NOT_FOUND", "Listing not found");
   }
 
-  const lead = createLead({
+  const lead = await repository.createLead({
     listingId,
     userId: context.userId,
     agentId: listing.agentId,
@@ -56,9 +52,10 @@ export function requestTour(auth: AuthContext | null, listingId: string, body: u
   };
 }
 
-export function listUserLeads(auth: AuthContext | null) {
+export async function listUserLeads(auth: AuthContext | null) {
+  const repository = getRepository();
   const context = requireAuth(auth);
-  const leads = Array.from(db.leads.values()).filter((lead) => lead.userId === context.userId);
+  const leads = await repository.listUserLeads(context.userId);
   return {
     items: leads
   };

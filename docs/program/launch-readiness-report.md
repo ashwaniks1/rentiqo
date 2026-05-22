@@ -36,7 +36,7 @@ This document is the final go/no-go artifact for production cutover.
 
 1. End-to-end staging suite with mobile-integrated flows is not yet complete.
 2. Compliance remediation tracker contains unresolved high-priority items.
-3. Production datastore and hardened auth controls remain in-progress (in-memory baseline currently used).
+3. Postgres repository/migrations are implemented, but Supabase project provisioning and hardened auth checklist are still in-progress.
 
 ## 5) Next required actions
 
