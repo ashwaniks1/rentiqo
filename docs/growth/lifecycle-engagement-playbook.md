@@ -38,3 +38,12 @@
 - Alert open rate
 - Re-engagement rate
 - Conversion from reactivation to save/contact actions
+
+## 6) Event instrumentation definitions
+
+| Event | Trigger | Required fields |
+| --- | --- | --- |
+| `lifecycle_welcome_sent` | New user onboarding message sent | user_id, channel, timestamp |
+| `lifecycle_alert_opened` | User opens listing alert | user_id, alert_id, listing_id, timestamp |
+| `lifecycle_reactivation_sent` | Dormant-user campaign dispatched | user_id, campaign_id, channel, timestamp |
+| `lifecycle_reactivation_converted` | User returns and performs save/contact/tour | user_id, action_type, timestamp |

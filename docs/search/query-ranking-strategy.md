@@ -15,7 +15,7 @@
 
 ## Ranking model phases
 
-1. Stage 4 baseline: rule-based scoring (`services/search/src/ranking/ranker.ts`)
+1. Stage 4/5 baseline: rule-based scoring (`services/search/src/ranking/ranker.ts`, version `rule-v2`)
 2. Stage 5+: add engagement-based re-ranking (click/save/tour feedback)
 
 ## Guardrails

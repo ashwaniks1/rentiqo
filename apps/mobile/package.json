@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@rentiqo/contracts": "file:../../packages/contracts",
     "expo": "^54.0.21",
     "react": "^19.2.0",
     "react-native": "^0.82.0"

@@ -4,8 +4,12 @@
 
 ### Backend
 - Health route behavior test
+- Auth register/login and profile behavior test coverage
 - Search route schema/shape test
-- Listing detail route shape test
+- Listing detail route behavior test
+- Saved homes flow test
+- Contact-agent and admin moderation route tests
+- Critical-path integration test (login -> search -> detail -> save -> contact)
 
 ### Search service
 - Ranking output order test
@@ -16,14 +20,14 @@
 
 | Domain | Automated coverage status | Gaps |
 | --- | --- | --- |
-| Backend scaffolds | Baseline implemented | Auth, persistence, and integration flows pending |
-| Search modules | Baseline implemented | Real index/data integration and dedupe logic pending |
-| Mobile | Minimal (state smoke planned) | RN test harness and UI/e2e suites pending |
-| End-to-end | Not yet implemented | Requires staging integrations and test runner setup |
+| Backend services | Expanded baseline implemented | Persistence hardening and authorization edge-case coverage pending |
+| Search modules | Expanded baseline implemented | Live telemetry and dataset-scale regression coverage pending |
+| Mobile | API wiring in progress | RN component tests and true mobile e2e suites pending |
+| End-to-end | Critical backend path implemented | Full staging/mobile e2e still pending |
 
 ## Required next coverage increments
 
-1. Add integration tests for backend-auth/search data path.
-2. Add mobile unit/component tests and basic navigation smoke suite.
-3. Add staging e2e tests for core conversion workflows.
-4. Add security/authorization regression checks as auth is wired.
+1. Add full staging e2e that includes mobile-client execution path.
+2. Add authz failure-path regression tests across agent/admin endpoints.
+3. Add mobile unit/component tests for loading/error states.
+4. Add release-gate assertions for compliance evidence completeness.

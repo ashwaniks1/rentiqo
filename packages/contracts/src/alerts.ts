@@ -14,4 +14,5 @@ export type AlertMatch = {
   savedSearchId: string;
   listingId: string;
   shouldNotify: boolean;
+  dedupeKey?: string;
 };

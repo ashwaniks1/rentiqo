@@ -17,7 +17,7 @@ These gates are mandatory before moving from release candidate to production.
 
 ## Gate Q3 - Staging functional validation
 
-- [ ] Search -> listing -> save journey validated.
+- [ ] Search -> listing -> save journey validated. (backend integration baseline implemented)
 - [ ] Contact/tour request flow validated.
 - [ ] Alert flow validated for saved searches.
 - [ ] Admin moderation baseline validated.

@@ -1,43 +1,32 @@
-import type { ListingSummary } from "@rentiqo/contracts";
-import { matchSavedSearches } from "./alerts/matcher.js";
-import { evaluateBaseline } from "./evaluation/baseline.js";
-import { scoreAndRankListings } from "./ranking/ranker.js";
-
-const sampleListings: ListingSummary[] = [
-  {
-    listingId: "demo-listing-1001",
-    price: 475000,
-    beds: 3,
-    baths: 2,
-    city: "Austin",
-    state: "TX",
-    status: "active"
-  },
-  {
-    listingId: "demo-listing-1002",
-    price: 520000,
-    beds: 4,
-    baths: 3,
-    city: "Austin",
-    state: "TX",
-    status: "active"
-  }
-];
+import { evaluateAlertMatches, evaluateRelevance, queryListings } from "./service.js";
 
 function boot() {
-  const ranked = scoreAndRankListings(sampleListings, { maxPrice: 500000, minBeds: 3 });
-  const evalResult = evaluateBaseline({
-    queryId: "startup-check",
-    results: ranked,
-    clickedListingId: ranked[0]?.listingId
+  const searchResults = queryListings({
+    query: "Austin",
+    filters: { maxPrice: 500000, minBeds: 3 }
   });
-  const alertMatches = matchSavedSearches(
+  const evalResult = evaluateRelevance({
+    queryId: "startup-check",
+    results: searchResults.items,
+    clickedListingId: searchResults.items[0]?.listingId
+  });
+  const alertMatches = evaluateAlertMatches(
     [{ savedSearchId: "saved-1", userId: "user-1", queryFingerprint: "austin-3br" }],
-    { listingId: ranked[0]?.listingId ?? "unknown", changedFields: ["price"], changedAt: new Date().toISOString() }
+    {
+      listingId: searchResults.items[0]?.listingId ?? "unknown",
+      changedFields: ["price"],
+      changedAt: new Date().toISOString()
+    }
   );
 
   process.stdout.write(
-    `${JSON.stringify({ service: "search-service", rankedCount: ranked.length, evalResult, alertMatches })}\n`
+    `${JSON.stringify({
+      service: "search-service",
+      rankedCount: searchResults.items.length,
+      rankingVersion: searchResults.rankingVersion,
+      evalResult,
+      alertMatches
+    })}\n`
   );
 }
 
