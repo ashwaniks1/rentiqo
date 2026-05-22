@@ -12,10 +12,10 @@
 | TC-004 | Search ranking deterministic ordering with same inputs | U | P0 | Implemented (unit) | Rule-v2 ranking tests active |
 | TC-005 | Alert matcher emits expected matches for saved searches | U | P1 | Implemented (unit) | Dedupe key behavior validated |
 | TC-006 | Baseline relevance evaluator computes top-3 click signal | U | P1 | Implemented (unit) | Conversion score validated |
-| TC-007 | Mobile saved-home state add/remove behavior | U | P1 | Planned | Add mobile state tests after RN test harness setup |
-| TC-008 | Search -> listing -> save journey in staging | E | P0 | Implemented (integration baseline) | Backend critical-path integration test implemented |
+| TC-007 | Mobile saved-home state add/remove behavior | E | P1 | Implemented (staging smoke) | Mobile API client smoke validates save/remove flows against live backend |
+| TC-008 | Search -> listing -> save journey in staging | E | P0 | Implemented (staging/mobile pipeline) | Automated via `scripts/qa/run-staging-mobile-e2e.sh` and CI `staging_mobile_e2e` job |
 | TC-009 | Save search -> alert generation -> notification dispatch | I/E | P0 | In progress | API baseline done, delivery pipeline pending |
-| TC-010 | Contact agent -> lead appears in agent queue | I/E | P0 | Implemented (unit/integration) | Route tests validate lead queue visibility |
+| TC-010 | Contact agent -> lead appears in agent queue | I/E | P0 | Implemented (staging smoke + integration) | Route tests and staging/mobile smoke validate lead creation and inbox growth |
 | TC-011 | Admin moderation action creates audit event | I | P1 | Planned | Requires admin API implementation |
 | TC-012 | Unauthorized access blocked for protected routes | I | P0 | Planned | Requires auth + RBAC implementation |
 
