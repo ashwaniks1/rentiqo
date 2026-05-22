@@ -163,6 +163,16 @@ class MemoryRepository {
     return rotateSessionTokens(refreshToken);
   }
 
+  async revokeSessionByAccessToken(accessToken: string): Promise<boolean> {
+    const session = db.sessionsByAccessToken.get(accessToken);
+    if (!session) {
+      return false;
+    }
+    db.sessionsByAccessToken.delete(accessToken);
+    db.sessionsByRefreshToken.delete(session.refreshToken);
+    return true;
+  }
+
   async updateUserPreferences(userId: string, input: UpdatePreferencesInput): Promise<UserRecord | null> {
     const user = db.users.get(userId);
     if (!user) {
@@ -437,6 +447,11 @@ class PostgresRepository {
     }
     await this.pool.query("delete from sessions where refresh_token = $1", [refreshToken]);
     return this.createSession(String(existing.rows[0].user_id));
+  }
+
+  async revokeSessionByAccessToken(accessToken: string): Promise<boolean> {
+    const result = await this.pool.query("delete from sessions where access_token = $1", [accessToken]);
+    return (result.rowCount ?? 0) > 0;
   }
 
   async updateUserPreferences(userId: string, input: UpdatePreferencesInput): Promise<UserRecord | null> {

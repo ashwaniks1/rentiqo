@@ -55,7 +55,7 @@ This board is the single source of truth for multi-agent execution status.
 | BL-001 | B1, B2 | Backend/search integrations not completed yet | Backend/Search owners | Complete Wave A and publish staging endpoints | Closed |
 | BL-002 | B2, D1 | Staging e2e pipeline not yet implemented | QA + DevSecOps | Add staging e2e runner and CI gate | Open |
 | BL-003 | D1 | Compliance evidence still policy-heavy, limited operational proof | Compliance owner | Build evidence log from actual control execution | In progress |
-| BL-004 | D1 | Production persistence hardening still has external Supabase setup dependencies | Backend + DevSecOps | Postgres repository/migrations implemented; MCP migration applied on project `qijsrgweibzgbdpsfopk`; finalize by creating separate project + setting dashboard DB password/connection string for runtime smoke test | In progress |
+| BL-004 | D1 | Production persistence hardening still has external Supabase setup dependencies | Backend + DevSecOps | Postgres repository/migrations implemented; MCP migration applied on project `qijsrgweibzgbdpsfopk`; session-pooler runtime smoke and critical-path postgres validation completed | Closed |
 
 ## Update log
 
@@ -66,3 +66,4 @@ This board is the single source of truth for multi-agent execution status.
 | 2026-05-22T02:20:00Z | Multi-role implementation agent | Completed A1/A2/C1/C2, advanced B1/B2, and moved D1 into hold review cycle |
 | 2026-05-22T03:30:00Z | Multi-role implementation agent | Added Postgres migrations/repository/env wiring; BL-004 moved to in-progress |
 | 2026-05-22T05:04:00Z | Multi-role implementation agent | Supabase MCP authenticated; initial schema migration applied and validated on project `qijsrgweibzgbdpsfopk`; remaining gap is separate project provisioning + dashboard connection string handoff |
+| 2026-05-22T20:19:00Z | Multi-role implementation agent | Completed Supabase session-pooler postgres runtime smoke (`db:migrate` + critical-path integration in postgres mode), implemented auth hardening (password policy, lockout, logout), and closed BL-004 |

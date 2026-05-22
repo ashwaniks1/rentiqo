@@ -21,6 +21,7 @@ import { getAgentProfile, listAgentLeads, updateLeadStatus } from "../../modules
 import {
   getCurrentUser,
   loginUser,
+  logoutUser,
   refreshSession,
   registerUser,
   updateUserPreferences
@@ -61,6 +62,9 @@ export async function routeV1(request: RequestContext): Promise<RouteResult> {
     }
     if (method === "POST" && path === "/v1/auth/refresh") {
       return { statusCode: 200, body: await refreshSession(request.body) };
+    }
+    if (method === "POST" && path === "/v1/auth/logout") {
+      return { statusCode: 200, body: await logoutUser(request.auth, request.headers.authorization) };
     }
     if (method === "GET" && path === "/v1/me") {
       return { statusCode: 200, body: await getCurrentUser(request.auth) };

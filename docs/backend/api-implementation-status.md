@@ -11,9 +11,10 @@ Status keys:
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/auth/register` | Done | In-memory auth baseline implemented and tested |
-| POST `/v1/auth/login` | Done | Login + token issuance implemented and tested |
+| POST `/v1/auth/register` | Done | Password policy enforcement (length + letter + digit) implemented and tested |
+| POST `/v1/auth/login` | Done | Login + token issuance implemented with lockout controls after repeated failures |
 | POST `/v1/auth/refresh` | Done | Refresh token rotation baseline implemented |
+| POST `/v1/auth/logout` | Done | Session revocation endpoint implemented and integration-tested |
 | GET `/v1/me` | Done | Authenticated profile payload implemented |
 | PATCH `/v1/me/preferences` | Done | Preference update endpoint implemented |
 
@@ -68,9 +69,11 @@ Status keys:
 - Validation commands:
   - `npm run typecheck` (pass)
   - `npm test` (pass)
+  - `set -a && . apps/backend/.env && set +a && npm run db:migrate -w @rentiqo/backend` (pass)
+  - `set -a && . apps/backend/.env && set +a && npx tsx --test apps/backend/src/__tests__/critical-path.integration.test.ts` (pass)
 
 ## Remaining hardening work
 
-1. Replace in-memory persistence with production datastore integration.
-2. Implement stronger auth security controls (lockouts, password policy, revocation lifecycle).
-3. Add explicit API schema contract tests and staging smoke evidence capture.
+1. Replace plaintext password handling with salted hashing + secure credential lifecycle.
+2. Move login lockout/session revocation controls to a distributed policy store for multi-instance deployments.
+3. Add explicit API schema contract tests and staging smoke evidence capture in CI.

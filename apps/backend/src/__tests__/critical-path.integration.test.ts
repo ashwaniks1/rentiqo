@@ -72,3 +72,46 @@ test("critical path: login -> search -> listing detail -> save -> contact", asyn
     server.close();
   }
 });
+
+test("auth hardening: logout revokes token for subsequent requests", async () => {
+  await getRepository().initialize();
+  const server = createHttpServer();
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const address = server.address() as AddressInfo;
+  const baseUrl = `http://127.0.0.1:${address.port}`;
+
+  try {
+    const login = await jsonRequest<{ accessToken: string }>(baseUrl, "/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "buyer@rentiqo.dev",
+        password: "password123"
+      })
+    });
+    assert.equal(login.response.status, 200);
+    const token = login.payload.accessToken;
+
+    const beforeLogout = await jsonRequest<{ userId: string }>(baseUrl, "/v1/me", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    assert.equal(beforeLogout.response.status, 200);
+    assert.equal(Boolean(beforeLogout.payload.userId), true);
+
+    const logout = await jsonRequest<{ success: boolean }>(baseUrl, "/v1/auth/logout", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    assert.equal(logout.response.status, 200);
+    assert.equal(logout.payload.success, true);
+
+    const afterLogout = await jsonRequest<{ code: string }>(baseUrl, "/v1/me", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    assert.equal(afterLogout.response.status, 401);
+    assert.equal(afterLogout.payload.code, "UNAUTHORIZED");
+  } finally {
+    server.close();
+  }
+});

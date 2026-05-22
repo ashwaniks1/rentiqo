@@ -5,11 +5,13 @@
 ### Backend
 - Health route behavior test
 - Auth register/login and profile behavior test coverage
+- Auth hardening coverage (password policy, login lockout, logout session revocation)
 - Search route schema/shape test
 - Listing detail route behavior test
 - Saved homes flow test
 - Contact-agent and admin moderation route tests
 - Critical-path integration test (login -> search -> detail -> save -> contact)
+- Critical-path integration extension validating logout token revocation
 
 ### Search service
 - Ranking output order test

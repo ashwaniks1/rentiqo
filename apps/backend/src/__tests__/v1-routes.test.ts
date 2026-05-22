@@ -28,11 +28,40 @@ test("GET /v1/health returns ok payload", async () => {
 });
 
 test("POST /v1/auth/register creates account and tokens", async () => {
+  const email = `new-buyer-${Date.now()}@rentiqo.dev`;
   const result = await routeV1(
-    requestContext("POST", "/v1/auth/register", { email: "new-buyer@rentiqo.dev", password: "password123" })
+    requestContext("POST", "/v1/auth/register", { email, password: "password123" })
   );
   assert.equal(result.statusCode, 201);
   assert.equal(Boolean((result.body as { accessToken?: string }).accessToken), true);
+});
+
+test("POST /v1/auth/register enforces password policy", async () => {
+  const result = await routeV1(
+    requestContext("POST", "/v1/auth/register", { email: "weak-pass@rentiqo.dev", password: "short1" })
+  );
+  assert.equal(result.statusCode, 400);
+  assert.equal((result.body as { code: string }).code, "PASSWORD_POLICY_VIOLATION");
+});
+
+test("POST /v1/auth/login locks account after repeated failures", async () => {
+  const email = `lockout-${Date.now()}@rentiqo.dev`;
+  const register = await routeV1(requestContext("POST", "/v1/auth/register", { email, password: "safePass123" }));
+  assert.equal(register.statusCode, 201);
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const failed = await routeV1(requestContext("POST", "/v1/auth/login", { email, password: "wrong-pass-1" }));
+    assert.equal(failed.statusCode, 401);
+    assert.equal((failed.body as { code: string }).code, "INVALID_CREDENTIALS");
+  }
+
+  const lockAttempt = await routeV1(requestContext("POST", "/v1/auth/login", { email, password: "wrong-pass-1" }));
+  assert.equal(lockAttempt.statusCode, 429);
+  assert.equal((lockAttempt.body as { code: string }).code, "ACCOUNT_LOCKED");
+
+  const correctWhileLocked = await routeV1(requestContext("POST", "/v1/auth/login", { email, password: "safePass123" }));
+  assert.equal(correctWhileLocked.statusCode, 429);
+  assert.equal((correctWhileLocked.body as { code: string }).code, "ACCOUNT_LOCKED");
 });
 
 test("POST /v1/search/listings returns ranked response", async () => {
@@ -124,4 +153,25 @@ test("admin moderation endpoints enforce role and produce records", async () => 
   const createdCase = await routeV1(createCaseContext);
   assert.equal(createdCase.statusCode, 201);
   assert.equal(Boolean((createdCase.body as { caseId?: string }).caseId), true);
+});
+
+test("POST /v1/auth/logout revokes current session token", async () => {
+  const login = await routeV1(
+    requestContext("POST", "/v1/auth/login", { email: "buyer@rentiqo.dev", password: "password123" })
+  );
+  assert.equal(login.statusCode, 200);
+  const token = (login.body as { accessToken: string }).accessToken;
+  const user = (login.body as { user: { userId: string; role: "consumer" | "agent" | "admin"; email: string } }).user;
+
+  const logoutContext = requestContext("POST", "/v1/auth/logout", undefined, token);
+  logoutContext.auth = user;
+  const logout = await routeV1(logoutContext);
+  assert.equal(logout.statusCode, 200);
+  assert.equal((logout.body as { success: boolean }).success, true);
+
+  const secondLogoutContext = requestContext("POST", "/v1/auth/logout", undefined, token);
+  secondLogoutContext.auth = user;
+  const secondLogout = await routeV1(secondLogoutContext);
+  assert.equal(secondLogout.statusCode, 401);
+  assert.equal((secondLogout.body as { code: string }).code, "INVALID_SESSION");
 });

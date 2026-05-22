@@ -42,6 +42,9 @@ See `apps/backend/.env.example`.
   - `users`: 3 rows
   - `listings`: 2 rows
   - expected public tables are present (`users`, `listings`, `saved_homes`, `saved_searches`, `leads`, `moderation_cases`, `audit_events`, etc.).
+- Verified backend runtime against session-pooler connection:
+  - `npm run db:migrate -w @rentiqo/backend` (pass)
+  - `npx tsx --test apps/backend/src/__tests__/critical-path.integration.test.ts` with `DATA_STORE_MODE=postgres` (pass)
 
 ## Current known gaps
 

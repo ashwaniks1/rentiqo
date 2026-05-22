@@ -38,21 +38,22 @@ Use this document during cutover to capture formal release decisions and rationa
 | Timestamp (UTC) | Candidate | Decision | Notes |
 | --- | --- | --- | --- |
 | 2026-05-22T02:20:00Z | cursor/agent-deliverables-blueprint-9a25 | Hold | Release verification passes, but production launch held pending staging/mobile e2e and compliance remediation evidence |
+| 2026-05-22T20:19:00Z | cursor/agent-deliverables-blueprint-9a25 | Hold | Supabase postgres runtime smoke and auth hardening increment completed; launch still held pending staging/mobile e2e evidence and top compliance remediation closures |
 
 ## Latest decision record
 
 ### Release candidate
 - Version/tag: branch `cursor/agent-deliverables-blueprint-9a25`
 - Commit SHA: pending final merge commit
-- Decision timestamp (UTC): 2026-05-22T02:20:00Z
+- Decision timestamp (UTC): 2026-05-22T20:19:00Z
 - Decision: Hold
 
 ### Evidence summary
 - CI result: passing locally (`npm run typecheck`, `npm test`)
-- Quality gate status: `npm run release:verify` pass
-- Security/compliance status: policy and evidence logs present; remediation items remain
-- Staging validation status: backend critical path integration test passing; full staging/mobile e2e pending
-- Open blocker count: 3
+- Quality gate status: `npm run release:verify` pass; postgres-mode smoke checks pass with session pooler env
+- Security/compliance status: policy/evidence logs present; auth hardening increment added (password policy, lockout, logout); remediation items remain
+- Staging validation status: backend critical path integration test passing in memory and postgres modes; full staging/mobile e2e pending
+- Open blocker count: 2
 
 ### Compliance readiness section
 - Operational evidence log created: `docs/compliance/operational-evidence-log.md`
