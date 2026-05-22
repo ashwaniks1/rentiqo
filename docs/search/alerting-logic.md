@@ -19,8 +19,10 @@ Notify users when newly relevant listings or meaningful listing changes match th
 
 ## Current implementation baseline
 
-- Matcher scaffold exists in `services/search/src/alerts/matcher.ts`.
-- Current baseline emits notify=true for deterministic placeholder behavior.
+- Matcher is implemented in `services/search/src/alerts/matcher.ts`.
+- Event type is derived deterministically from changed fields (`new_listing`, `price_change`, `status_change`, `listing_update`).
+- Matcher supports fingerprint-aware matching via `changedFields` entries like `fingerprint:<normalized-query-fingerprint>`.
+- Dedupe key generation is enforced as `userId:savedSearchId:listingId:eventType`.
 
 ## Production requirements
 
