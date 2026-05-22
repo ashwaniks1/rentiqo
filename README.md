@@ -19,3 +19,5 @@ Agent orchestration entrypoints:
 
 - `docs/program/task-board.md`
 - `docs/program/handoff-template.md`
+- `docs/program/agent-launch-playbook.md`
+- `docs/program/agent-prompts.md`
