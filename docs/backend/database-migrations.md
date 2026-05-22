@@ -11,6 +11,10 @@ This document defines initial migration sets for the canonical transactional dat
   - `apps/backend/src/db/migrations/0001_initial_schema.sql`
 - Backend command:
   - `npm run db:migrate -w @rentiqo/backend`
+- Supabase execution evidence (MCP):
+  - `apply_migration` run name: `rentiqo_initial_schema`
+  - target project ref: `qijsrgweibzgbdpsfopk`
+  - verification: public tables created and seed rows present (`users=3`, `listings=2`)
 
 ## Migration strategy
 

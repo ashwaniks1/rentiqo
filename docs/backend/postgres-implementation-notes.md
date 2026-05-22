@@ -33,6 +33,18 @@
 
 See `apps/backend/.env.example`.
 
-## Current known gap
+## Supabase execution status (2026-05-22)
 
-- Supabase project provisioning from this cloud run is blocked until Supabase MCP authentication is available in this environment (`serverStatus: needsAuth`).
+- Supabase MCP is now authenticated (`serverStatus: ready`).
+- Connected project URL: `https://qijsrgweibzgbdpsfopk.supabase.co`
+- Applied migration with MCP tool `apply_migration` using `rentiqo_initial_schema` query bundle.
+- Verified tables and seed data using MCP:
+  - `users`: 3 rows
+  - `listings`: 2 rows
+  - expected public tables are present (`users`, `listings`, `saved_homes`, `saved_searches`, `leads`, `moderation_cases`, `audit_events`, etc.).
+
+## Current known gaps
+
+- This MCP scope does not expose Supabase account-management tools (`create_project`, `list_projects`), so creating a brand-new Supabase project from this run is not possible.
+- Supabase does not expose database passwords via MCP; `DATABASE_URL` must be assembled from Dashboard Connect values (project ref + DB password).
+- Cloud runner networking is IPv4-only for this task, while direct DB host (`db.<project-ref>.supabase.co`) resolved to IPv6, so local `db:migrate` verification from this runner requires using the session pooler connection string from Dashboard.
