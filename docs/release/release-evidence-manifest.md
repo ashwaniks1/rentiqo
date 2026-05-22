@@ -11,6 +11,7 @@ Collect links/paths to all evidence required for final production decision.
 ## Quality evidence
 
 - CI workflow definition: `.github/workflows/ci.yml`
+- Staging deployment workflow baseline: `.github/workflows/staging-deploy.yml`
 - QA quality gates: `docs/qa/release-quality-gates.md`
 - Test matrix: `docs/qa/test-case-matrix.md`
 
@@ -24,6 +25,8 @@ Collect links/paths to all evidence required for final production decision.
 ## Operations evidence
 
 - Incident runbook: `docs/devops/incident-response-runbook.md`
+- Incident routing matrix: `docs/devops/incident-routing-matrix.md`
+- Observability gate checks: `docs/devops/observability-gate-checks.md`
 - On-call plan: `docs/program/oncall-operations-plan.md`
 - Rollback validation report: `docs/program/rollback-validation-report.md`
 - Post-launch monitoring plan: `docs/program/post-launch-monitoring-plan.md`

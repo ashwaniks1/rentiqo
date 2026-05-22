@@ -36,6 +36,13 @@ This baseline defines mandatory controls for Stage 3 and beyond.
 - Critical vulnerability remediation required before release.
 - Security review required for high-risk architecture changes.
 
+### Implemented CI security gates (Task A3)
+
+- `.github/workflows/ci.yml` enforces dependency review on pull requests via `actions/dependency-review-action`.
+- `.github/workflows/ci.yml` enforces `npm audit --omit=dev --audit-level=high` for production dependency risk.
+- `npm run release:verify` is required in CI and staging preflight.
+- Staging deployment baseline requires observability and incident routing checks before environment promotion.
+
 ## 6) Monitoring and detection
 
 - Security event logging and centralized aggregation.

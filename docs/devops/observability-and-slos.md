@@ -46,7 +46,25 @@ Required dashboard groups:
 4. Notification/alert delivery health
 5. Infrastructure saturation and capacity
 
-## 6) Error budget policy
+## 6) Automated observability gate enforcement
+
+Observability gates are codified in `docs/devops/observability-gate-checks.md` and enforced by:
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/staging-deploy.yml`
+- `scripts/release/check-observability-gates.sh`
+
+Release candidates do not advance when any required observability artifact or gate fails.
+
+## 7) Incident routing linkage
+
+Severity escalation and responder assignments are documented in:
+
+- `docs/devops/incident-routing-matrix.md`
+- `docs/devops/incident-response-runbook.md`
+- `docs/program/oncall-operations-plan.md`
+
+## 8) Error budget policy
 
 - Track monthly error budget consumption by service tier.
 - Freeze risky deploys when budget burn exceeds threshold.

@@ -50,3 +50,9 @@
   - ingestion failure
   - notification pipeline delay
   - credential/key compromise scenario
+
+## 8) Routing and escalation artifacts
+
+- Severity routing matrix: `docs/devops/incident-routing-matrix.md`
+- On-call ownership and rotation: `docs/program/oncall-operations-plan.md`
+- Observability gate expectations: `docs/devops/observability-gate-checks.md`

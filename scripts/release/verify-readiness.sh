@@ -11,6 +11,8 @@ required_files=(
   "docs/program/launch-day-checklist.md"
   "docs/program/go-no-go-decision-log.md"
   "docs/program/rollback-validation-report.md"
+  "docs/devops/observability-gate-checks.md"
+  "docs/devops/incident-routing-matrix.md"
   "docs/qa/release-quality-gates.md"
   "docs/compliance/privacy-and-data-governance.md"
   "docs/release/release-evidence-manifest.md"
@@ -29,5 +31,8 @@ npm run typecheck
 
 echo "==> Running test suites"
 npm test
+
+echo "==> Running observability and incident routing checks"
+bash scripts/release/check-observability-gates.sh
 
 echo "==> Release readiness verification passed"
