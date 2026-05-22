@@ -1,0 +1,64 @@
+name: staging-deploy-baseline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test suites
+        run: npm test
+
+      - name: Release readiness verification
+        run: npm run release:verify
+
+      - name: Observability and incident routing gates
+        run: bash scripts/release/check-observability-gates.sh
+
+  staging-deployment-baseline:
+    needs: preflight
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build deployment metadata
+        run: |
+          mkdir -p artifacts
+          printf "commit_sha=%s\n" "${GITHUB_SHA}" > artifacts/staging-deploy-metadata.txt
+          printf "workflow=%s\n" "${GITHUB_WORKFLOW}" >> artifacts/staging-deploy-metadata.txt
+          printf "run_id=%s\n" "${GITHUB_RUN_ID}" >> artifacts/staging-deploy-metadata.txt
+          printf "timestamp_utc=%s\n" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> artifacts/staging-deploy-metadata.txt
+
+      - name: Upload staging deployment metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-deploy-metadata
+          path: artifacts/staging-deploy-metadata.txt
