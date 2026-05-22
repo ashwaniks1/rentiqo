@@ -3,9 +3,8 @@ import assert from "node:assert/strict";
 const apiBaseUrl = process.env.E2E_API_BASE_URL ?? process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:18080";
 process.env.EXPO_PUBLIC_API_BASE_URL = apiBaseUrl;
 
-const apiClient = await import("../src/api/client.ts");
-
 async function run() {
+  const apiClient = await import("../src/api/client.ts");
   const session = await apiClient.login("buyer@rentiqo.dev", "password123");
   assert.equal(Boolean(session.accessToken), true, "login must return access token");
 
