@@ -26,7 +26,7 @@ This board is the single source of truth for multi-agent execution status.
 | --- | --- | --- | --- | --- | --- | --- |
 | A1 | Backend feature integration (auth, saves, leads, admin APIs) | Backend Integration Agent | READY | None | API endpoints implemented + contract tests pass | `apps/backend/**`, `docs/backend/api-implementation-status.md` |
 | A2 | Search integration (real query/ranking/matching pipeline) | Search Integration Agent | READY | None | Search flow implemented + ranking/matcher tests pass | `services/search/**`, `docs/search/*` |
-| A3 | DevSecOps staging/deploy hardening | DevSecOps/SRE Agent | IN_PROGRESS | None | CI/CD + staging deploy + observability checks active | `.github/workflows/**`, `docs/devops/*` |
+| A3 | DevSecOps staging/deploy hardening | DevSecOps/SRE Agent | REVIEW | None | CI/CD + staging deploy + observability checks active | `.github/workflows/**`, `docs/devops/*`, `scripts/release/check-observability-gates.sh` |
 
 ### Wave B (after Wave A core endpoints are available)
 
@@ -53,7 +53,7 @@ This board is the single source of truth for multi-agent execution status.
 | Blocker ID | Affected task(s) | Description | Owner | Mitigation | Status |
 | --- | --- | --- | --- | --- | --- |
 | BL-001 | B1, B2 | Backend/search integrations not completed yet | Backend/Search owners | Complete Wave A and publish staging endpoints | Open |
-| BL-002 | B2, D1 | Staging e2e pipeline not yet implemented | QA + DevSecOps | Add staging e2e runner and CI gate | In progress (DevSecOps baseline update) |
+| BL-002 | B2, D1 | Staging e2e pipeline not yet implemented | QA + DevSecOps | Add staging e2e runner and CI gate | Mitigated (DevSecOps CI/staging gate baseline complete; QA e2e suite pending B1) |
 | BL-003 | D1 | Compliance evidence still policy-heavy, limited operational proof | Compliance owner | Build evidence log from actual control execution | Open |
 
 ## Update log
@@ -63,3 +63,4 @@ This board is the single source of truth for multi-agent execution status.
 | 2026-05-22T00:05:00Z | Program Orchestrator | Initial automation task board created |
 | 2026-05-22T00:08:00Z | Program Orchestrator | Added launch playbook and copy/paste agent prompt pack |
 | 2026-05-22T01:24:01Z | DevSecOps/SRE Agent (A3) | Started A3 implementation; CI/staging/observability hardening in progress |
+| 2026-05-22T01:25:50Z | DevSecOps/SRE Agent (A3) | Completed A3 and continued immediately with BL-002 DevSecOps mitigation baseline for staging gates |
