@@ -14,3 +14,8 @@ Stage 4 implementation scaffolding now exists for:
 Release-readiness verification command:
 
 - `npm run release:verify`
+
+Agent orchestration entrypoints:
+
+- `docs/program/task-board.md`
+- `docs/program/handoff-template.md`
