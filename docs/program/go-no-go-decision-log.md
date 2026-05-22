@@ -37,4 +37,35 @@ Use this document during cutover to capture formal release decisions and rationa
 
 | Timestamp (UTC) | Candidate | Decision | Notes |
 | --- | --- | --- | --- |
-| TBD | TBD | TBD | Initial placeholder |
+| 2026-05-22T02:20:00Z | cursor/agent-deliverables-blueprint-9a25 | Hold | Release verification passes, but production launch held pending staging/mobile e2e and compliance remediation evidence |
+| 2026-05-22T20:19:00Z | cursor/agent-deliverables-blueprint-9a25 | Hold | Supabase postgres runtime smoke and auth hardening increment completed; launch still held pending staging/mobile e2e evidence and top compliance remediation closures |
+| 2026-05-22T20:36:00Z | cursor/agent-deliverables-blueprint-9a25 | Hold | BL-002 staging/mobile e2e pipeline implemented with local pass evidence; launch remains hold pending compliance remediation closures and CI artifact publication |
+
+## Latest decision record
+
+### Release candidate
+- Version/tag: branch `cursor/agent-deliverables-blueprint-9a25`
+- Commit SHA: pending final merge commit
+- Decision timestamp (UTC): 2026-05-22T20:36:00Z
+- Decision: Hold
+
+### Evidence summary
+- CI result: passing locally (`npm run typecheck`, `npm test`)
+- Quality gate status: `npm run release:verify` pass; postgres-mode smoke checks pass with session pooler env; staging/mobile smoke runner implemented and passing locally
+- Security/compliance status: policy/evidence logs present; auth hardening increment added (password policy, lockout, logout); remediation items remain
+- Staging validation status: backend critical path integration test passing in memory and postgres modes; staging/mobile smoke automation implemented with CI job in review
+- Open blocker count: 1
+
+### Compliance readiness section
+- Operational evidence log created: `docs/compliance/operational-evidence-log.md`
+- Control remediation tracker created: `docs/compliance/control-remediation-tracker.md`
+- Remaining high-priority compliance blockers: CR-001, CR-002, CR-006
+
+### Decision rationale
+- The engineering baseline is significantly advanced and release verification command is green.
+- Launch is held because production-grade staging evidence and compliance remediation closures are not yet complete.
+
+### Required follow-up actions
+1. Attach CI artifact evidence from first `staging_mobile_e2e` run.
+2. Close top compliance remediation items with execution evidence.
+3. Re-run release verification and update this log with final GO/NO-GO decision.

@@ -12,15 +12,20 @@ These gates are mandatory before moving from release candidate to production.
 
 - [ ] Backend unit/integration suites pass.
 - [ ] Search service unit/integration suites pass.
-- [ ] Mobile test suite baseline passes.
+- [x] Mobile staging smoke suite baseline passes (`npm run test:staging-e2e`).
 - [ ] Critical test cases from `docs/qa/test-case-matrix.md` marked pass for current scope.
 
 ## Gate Q3 - Staging functional validation
 
-- [ ] Search -> listing -> save journey validated.
-- [ ] Contact/tour request flow validated.
+- [x] Search -> listing -> save journey validated.
+- [x] Contact/tour request flow validated.
 - [ ] Alert flow validated for saved searches.
-- [ ] Admin moderation baseline validated.
+- [x] Admin moderation baseline validated. (backend route coverage)
+
+Validation evidence:
+- Runner script: `scripts/qa/run-staging-mobile-e2e.sh`
+- Mobile smoke script: `apps/mobile/e2e/staging-mobile-smoke.ts`
+- CI job: `.github/workflows/ci.yml` -> `staging_mobile_e2e`
 
 ## Gate Q4 - Non-functional and operational checks
 

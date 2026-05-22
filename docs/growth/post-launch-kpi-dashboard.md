@@ -37,3 +37,22 @@ Track product health, marketplace quality, growth efficiency, and monetization p
 - Data quality SLA breach
 - Reliability SLO breach
 - Revenue guardrail breaches for active experiments
+
+## 6) Instrumentation mapping (implementation baseline)
+
+| Event name | Source surface | KPI linkage |
+| --- | --- | --- |
+| `auth_login_success` | Mobile auth flow | Activation rate |
+| `search_query_submitted` | Mobile discover/search | Search volume, zero-result rate |
+| `listing_detail_opened` | Mobile listing detail | Search -> detail CTR |
+| `home_saved` | Mobile save action | Save conversion |
+| `contact_agent_submitted` | Mobile contact flow | Lead conversion |
+| `tour_request_submitted` | Mobile tour flow | High-intent conversion |
+| `alert_match_generated` | Search/alerts pipeline | Alert relevance and delivery quality |
+| `api_error_rate_spike` | Backend observability | Reliability guardrails |
+
+## 7) Ownership
+
+- Product/Growth: conversion and engagement KPIs
+- Backend/Search: event emission integrity and schema stability
+- DevSecOps/SRE: reliability and alert signal operationalization

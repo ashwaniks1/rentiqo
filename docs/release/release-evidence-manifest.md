@@ -13,6 +13,8 @@ Collect links/paths to all evidence required for final production decision.
 - CI workflow definition: `.github/workflows/ci.yml`
 - QA quality gates: `docs/qa/release-quality-gates.md`
 - Test matrix: `docs/qa/test-case-matrix.md`
+- Staging/mobile e2e runner: `scripts/qa/run-staging-mobile-e2e.sh`
+- Mobile smoke script: `apps/mobile/e2e/staging-mobile-smoke.ts`
 
 ## Security and compliance evidence
 

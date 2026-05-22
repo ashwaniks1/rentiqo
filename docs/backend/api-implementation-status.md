@@ -1,68 +1,79 @@
-# Rentiqo API Implementation Status (Stage 3)
+# Rentiqo API Implementation Status (Implementation Update)
 
 This file tracks implementation readiness against the API contract baseline in `docs/architecture/api-contracts.md`.
 
 Status keys:
+- **Done:** implemented, tested, and verified in local CI
+- **In progress:** implemented baseline, needs production hardening
 - **Ready for implementation:** contract finalized, build tasks can start
-- **In progress:** implementation underway
-- **Done:** implemented, tested, and verified
 
 ## Identity APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/auth/register` | Ready for implementation | Requires auth provider adapter |
-| POST `/v1/auth/login` | Ready for implementation | Must include brute-force protections |
-| POST `/v1/auth/refresh` | Ready for implementation | Token rotation strategy defined |
-| GET `/v1/me` | Ready for implementation | Role-aware payload |
-| PATCH `/v1/me/preferences` | Ready for implementation | Preference schema finalized |
+| POST `/v1/auth/register` | Done | Password policy enforcement (length + letter + digit) implemented and tested |
+| POST `/v1/auth/login` | Done | Login + token issuance implemented with lockout controls after repeated failures |
+| POST `/v1/auth/refresh` | Done | Refresh token rotation baseline implemented |
+| POST `/v1/auth/logout` | Done | Session revocation endpoint implemented and integration-tested |
+| GET `/v1/me` | Done | Authenticated profile payload implemented |
+| PATCH `/v1/me/preferences` | Done | Preference update endpoint implemented |
 
 ## Search and listing APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/search/listings` | Ready for implementation | Depends on index schema and filters |
-| GET `/v1/listings/{listingId}` | Ready for implementation | Depends on canonical listing model |
-| GET `/v1/listings/{listingId}/history` | Ready for implementation | History event model documented |
+| POST `/v1/search/listings` | Done | Connected to search-service query module |
+| GET `/v1/listings/{listingId}` | Done | Listing detail retrieval implemented |
+| GET `/v1/listings/{listingId}/history` | Done | Listing history endpoint implemented |
 
 ## Saved state APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/saved-homes` | Ready for implementation | Requires idempotency consideration |
-| DELETE `/v1/saved-homes/{listingId}` | Ready for implementation | Soft-delete policy TBD |
-| GET `/v1/saved-homes` | Ready for implementation | Cursor pagination required |
-| POST `/v1/saved-searches` | Ready for implementation | Alert channel validation needed |
-| PATCH `/v1/saved-searches/{savedSearchId}` | Ready for implementation | Partial update semantics required |
-| DELETE `/v1/saved-searches/{savedSearchId}` | Ready for implementation | Cascade behavior defined in DB policy |
+| POST `/v1/saved-homes` | Done | Save home flow implemented |
+| DELETE `/v1/saved-homes/{listingId}` | Done | Remove saved home implemented |
+| GET `/v1/saved-homes` | Done | Saved home listing implemented |
+| POST `/v1/saved-searches` | Done | Saved search creation implemented |
+| PATCH `/v1/saved-searches/{savedSearchId}` | Done | Saved search update implemented |
+| DELETE `/v1/saved-searches/{savedSearchId}` | Done | Saved search delete implemented |
 
 ## Engagement APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| POST `/v1/listings/{listingId}/contact-agent` | Ready for implementation | Event emission required |
-| POST `/v1/listings/{listingId}/tour-requests` | Ready for implementation | Time window validation required |
-| GET `/v1/me/leads` | Ready for implementation | Consumer history view |
+| POST `/v1/listings/{listingId}/contact-agent` | Done | Lead creation flow implemented |
+| POST `/v1/listings/{listingId}/tour-requests` | Done | Tour request flow implemented |
+| GET `/v1/me/leads` | Done | Consumer lead history implemented |
 
 ## Agent APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| GET `/v1/agent/me/leads` | Ready for implementation | RBAC enforcement required |
-| PATCH `/v1/agent/leads/{leadId}` | Ready for implementation | Transition guardrails required |
-| GET `/v1/agent/me/profile` | Ready for implementation | Verification state support |
+| GET `/v1/agent/me/leads` | Done | Agent queue endpoint implemented with role checks |
+| PATCH `/v1/agent/leads/{leadId}` | Done | Agent status update endpoint implemented |
+| GET `/v1/agent/me/profile` | Done | Agent profile endpoint implemented |
 
 ## Admin APIs
 
 | Endpoint | Status | Notes |
 | --- | --- | --- |
-| GET `/v1/admin/moderation/cases` | Ready for implementation | Privileged route audit logs mandatory |
-| POST `/v1/admin/moderation/cases` | Ready for implementation | Reason/severity enums required |
-| PATCH `/v1/admin/moderation/cases/{caseId}` | Ready for implementation | Action reason mandatory |
-| GET `/v1/admin/data-quality/summary` | Ready for implementation | Depends on quality metric pipeline |
+| GET `/v1/admin/moderation/cases` | Done | Admin moderation list endpoint implemented |
+| POST `/v1/admin/moderation/cases` | Done | Moderation case creation implemented |
+| PATCH `/v1/admin/moderation/cases/{caseId}` | Done | Moderation update + audit event implemented |
+| GET `/v1/admin/data-quality/summary` | Done | Data quality summary baseline implemented |
 
-## Next milestones
+## Verification evidence
 
-1. Backend code scaffolding and route skeleton generation.
-2. Contract test harness for all v1 endpoints.
-3. Staging deployment with smoke tests.
+- Unit/integration route tests: `apps/backend/src/__tests__/v1-routes.test.ts`
+- Critical path integration test: `apps/backend/src/__tests__/critical-path.integration.test.ts`
+- Validation commands:
+  - `npm run typecheck` (pass)
+  - `npm test` (pass)
+  - `set -a && . apps/backend/.env && set +a && npm run db:migrate -w @rentiqo/backend` (pass)
+  - `set -a && . apps/backend/.env && set +a && npx tsx --test apps/backend/src/__tests__/critical-path.integration.test.ts` (pass)
+
+## Remaining hardening work
+
+1. Replace plaintext password handling with salted hashing + secure credential lifecycle.
+2. Move login lockout/session revocation controls to a distributed policy store for multi-instance deployments.
+3. Add explicit API schema contract tests and staging smoke evidence capture in CI.

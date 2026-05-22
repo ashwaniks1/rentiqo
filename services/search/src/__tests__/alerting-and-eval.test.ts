@@ -18,6 +18,19 @@ test("alert matcher emits one match per saved search", () => {
 
   assert.equal(matches.length, 2);
   assert.equal(matches.every((item) => item.shouldNotify), true);
+  assert.equal(matches.every((item) => Boolean(item.dedupeKey)), true);
+});
+
+test("alert matcher suppresses notify on non-critical field changes", () => {
+  const matches = matchSavedSearches(
+    [{ savedSearchId: "s1", userId: "u1", queryFingerprint: "austin-3br" }],
+    {
+      listingId: "listing-1",
+      changedFields: ["description"],
+      changedAt: new Date().toISOString()
+    }
+  );
+  assert.equal(matches[0]?.shouldNotify, false);
 });
 
 test("baseline evaluator marks click in top 3", () => {
@@ -38,4 +51,5 @@ test("baseline evaluator marks click in top 3", () => {
   });
 
   assert.equal(result.clickAtTop3, true);
+  assert.equal(result.conversionScore, 1);
 });

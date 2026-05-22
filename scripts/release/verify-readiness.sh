@@ -30,4 +30,7 @@ npm run typecheck
 echo "==> Running test suites"
 npm test
 
+echo "==> Running staging/mobile e2e smoke"
+npm run test:staging-e2e
+
 echo "==> Release readiness verification passed"

@@ -6,15 +6,18 @@
   "scripts": {
     "dev": "expo start",
     "build": "echo \"Use EAS build pipeline for production mobile builds\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:staging-e2e": "tsx e2e/staging-mobile-smoke.ts"
   },
   "dependencies": {
+    "@rentiqo/contracts": "file:../../packages/contracts",
     "expo": "^54.0.21",
     "react": "^19.2.0",
     "react-native": "^0.82.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }
 }

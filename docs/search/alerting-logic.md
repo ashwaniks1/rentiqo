@@ -20,7 +20,7 @@ Notify users when newly relevant listings or meaningful listing changes match th
 ## Current implementation baseline
 
 - Matcher scaffold exists in `services/search/src/alerts/matcher.ts`.
-- Current baseline emits notify=true for deterministic placeholder behavior.
+- Current baseline computes `shouldNotify` based on changed field relevance and emits a dedupe key per match.
 
 ## Production requirements
 

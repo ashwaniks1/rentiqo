@@ -14,3 +14,14 @@ Stage 4 implementation scaffolding now exists for:
 Release-readiness verification command:
 
 - `npm run release:verify`
+
+Database migration command (backend):
+
+- `npm run db:migrate -w @rentiqo/backend`
+
+Agent orchestration entrypoints:
+
+- `docs/program/task-board.md`
+- `docs/program/handoff-template.md`
+- `docs/program/agent-launch-playbook.md`
+- `docs/program/agent-prompts.md`

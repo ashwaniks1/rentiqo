@@ -19,11 +19,23 @@
 
 ## Current implementation
 
-- Baseline evaluator scaffold in `services/search/src/evaluation/baseline.ts`
-- Tracks top-3 click and save occurrence signals
+- Query pipeline implemented in `services/search/src/query/query-engine.ts`
+- Ranking baseline implemented in `services/search/src/ranking/ranker.ts` with version `rule-v2`
+- Alert matcher with dedupe key support in `services/search/src/alerts/matcher.ts`
+- Relevance evaluator in `services/search/src/evaluation/baseline.ts` now outputs conversion score
+
+## Local baseline evidence (latest run)
+
+- Command: `npm test`
+- Search test suite status: pass
+- Observed checks:
+  - ranking ordering behavior validated
+  - filter + query pipeline behavior validated
+  - alert matcher notify/dedupe behavior validated
+  - baseline relevance click-at-top3 + conversion score validated
 
 ## Next steps
 
-1. Add synthetic test fixtures for ranking regression checks.
-2. Instrument live event collection for click/save/tour events.
-3. Add weekly relevance quality report by market segment.
+1. Add live event ingestion for click/save/contact/tour outcomes.
+2. Produce staging query-level relevance report against realistic traffic slices.
+3. Add threshold-based regression alarms tied to zero-result and conversion drops.

@@ -7,15 +7,16 @@ The mobile app is structured as a modular React Native/Expo application with cle
 - `src/navigation` for app navigation and route composition
 - `src/screens` for route-level UI surfaces
 - `src/state` for app-level client state and session-scoped data
-- future `src/api` for backend service integration
+- `src/api` for backend service integration
 - future `src/components` for reusable UI primitives
 
 ## Current scaffolding
 
 - Root app bootstrapping via Expo.
 - Tab-oriented navigation baseline (Discover, Saved, Inbox, Profile).
-- Shared state context for saved home interactions.
-- Placeholder screens aligned to Stage 2 UX flow specs.
+- Shared state context with demo auth session + API-driven flows.
+- API client integration for login/search/listing/save/contact/tour/inbox endpoints.
+- Loading/error/empty-state handling across core tabs.
 
 ## Planned architecture evolution
 
