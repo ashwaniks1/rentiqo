@@ -1,9 +1,7 @@
-import type { IncomingMessage } from "node:http";
+import { createSeededListingDataset, executeListingSearch } from "@rentiqo/search-service";
 
-export function searchListings(_request: IncomingMessage) {
-  return {
-    items: [],
-    nextCursor: null,
-    message: "Search scaffolding active. Connect search-service to enable results."
-  };
+const dataset = createSeededListingDataset();
+
+export function searchListings(searchRequest: Record<string, unknown>) {
+  return executeListingSearch(dataset, searchRequest);
 }

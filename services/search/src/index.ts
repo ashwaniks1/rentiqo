@@ -1,44 +1,51 @@
-import type { ListingSummary } from "@rentiqo/contracts";
+import { pathToFileURL } from "node:url";
 import { matchSavedSearches } from "./alerts/matcher.js";
+import { createSeededListingDataset } from "./data/listing-dataset.js";
 import { evaluateBaseline } from "./evaluation/baseline.js";
-import { scoreAndRankListings } from "./ranking/ranker.js";
-
-const sampleListings: ListingSummary[] = [
-  {
-    listingId: "demo-listing-1001",
-    price: 475000,
-    beds: 3,
-    baths: 2,
-    city: "Austin",
-    state: "TX",
-    status: "active"
-  },
-  {
-    listingId: "demo-listing-1002",
-    price: 520000,
-    beds: 4,
-    baths: 3,
-    city: "Austin",
-    state: "TX",
-    status: "active"
-  }
-];
+import { executeListingSearch } from "./query/listing-search.js";
+import { RANKING_VERSION } from "./ranking/ranker.js";
 
 function boot() {
-  const ranked = scoreAndRankListings(sampleListings, { maxPrice: 500000, minBeds: 3 });
+  const dataset = createSeededListingDataset();
+  const ranked = executeListingSearch(dataset, {
+    query: "austin",
+    filters: { maxPrice: 500000, minBeds: 3, statuses: ["active"] },
+    limit: 2
+  });
   const evalResult = evaluateBaseline({
     queryId: "startup-check",
-    results: ranked,
-    clickedListingId: ranked[0]?.listingId
+    results: ranked.items,
+    clickedListingId: ranked.items[0]?.listingId
   });
   const alertMatches = matchSavedSearches(
-    [{ savedSearchId: "saved-1", userId: "user-1", queryFingerprint: "austin-3br" }],
-    { listingId: ranked[0]?.listingId ?? "unknown", changedFields: ["price"], changedAt: new Date().toISOString() }
+    [
+      {
+        savedSearchId: "saved-1",
+        userId: "user-1",
+        queryFingerprint: "austin",
+        query: { filters: { minBeds: 3 } },
+        channels: ["email"]
+      }
+    ],
+    {
+      listingId: ranked.items[0]?.listingId ?? "unknown",
+      changedFields: ["price"],
+      changedAt: new Date().toISOString(),
+      fingerprintSignals: ["austin", "3br", "active"]
+    }
   );
 
   process.stdout.write(
-    `${JSON.stringify({ service: "search-service", rankedCount: ranked.length, evalResult, alertMatches })}\n`
+    `${JSON.stringify({
+      service: "search-service",
+      rankedCount: ranked.items.length,
+      rankingVersion: RANKING_VERSION,
+      evalResult,
+      alertMatches
+    })}\n`
   );
 }
 
-boot();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  boot();
+}
