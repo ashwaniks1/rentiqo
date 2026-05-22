@@ -4,7 +4,7 @@
 - **From agent:** Search Integration Agent  
 - **To agent:** Program Orchestrator  
 - **Timestamp (UTC):** 2026-05-22T01:14:00Z  
-- **Related PR/commit SHA:** pending commit on `cursor/a2-search-integration-b203`
+- **Related PR/commit SHA:** PR #6 (`https://github.com/ashwaniks1/rentiqo/pull/6`), commit `804f8f6`
 
 ## 2) Completed scope
 
