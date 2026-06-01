@@ -2,6 +2,10 @@
   "name": "rentiqo-platform",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "workspaces": [
     "apps/*",
     "services/*",
