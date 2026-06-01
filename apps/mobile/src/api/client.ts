@@ -1,103 +1,76 @@
-import type { ListingDetail, ListingSummary, SearchRequest } from "@rentiqo/contracts";
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
-export type SessionPayload = {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    userId: string;
-    email: string;
-    role: "consumer" | "agent" | "admin";
-  };
-};
-
-type ApiOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
-  token?: string;
-  body?: unknown;
-};
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
-async function request<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? "GET",
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {})
+      ...(options.headers ?? {}),
     },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined
+    ...options,
   });
-
-  const payload = (await response.json()) as T & { message?: string };
+  const payload = await response.json();
   if (!response.ok) {
-    throw new Error((payload as { message?: string }).message ?? "API request failed");
+    throw new Error(payload.message ?? `Request failed (${response.status})`);
   }
   return payload as T;
 }
 
-export function login(email: string, password: string) {
-  return request<SessionPayload>("/v1/auth/login", {
-    method: "POST",
-    body: { email, password }
-  });
+function authHeaders(token: string): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function searchListings(token: string, searchRequest: SearchRequest) {
-  return request<{ items: ListingSummary[]; nextCursor: string | null; rankingVersion: string }>("/v1/search/listings", {
+export function loginUser(email: string, password: string) {
+  return request("/v1/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+}
+
+export function registerUser(email: string, password: string) {
+  return request("/v1/auth/register", { method: "POST", body: JSON.stringify({ email, password }) });
+}
+
+export function searchListings(token: string, query: string, filters: Record<string, unknown> = {}) {
+  return request("/v1/search/listings", {
     method: "POST",
-    token,
-    body: searchRequest
+    headers: authHeaders(token),
+    body: JSON.stringify({ query, filters }),
   });
 }
 
 export function getListingDetail(token: string, listingId: string) {
-  return request<ListingDetail>(`/v1/listings/${listingId}`, {
-    method: "GET",
-    token
-  });
+  return request(`/v1/listings/${listingId}`, { headers: authHeaders(token) });
+}
+
+export function listSavedHomes(token: string) {
+  return request("/v1/saved-homes", { headers: authHeaders(token) });
 }
 
 export function saveHome(token: string, listingId: string) {
-  return request<{ saved_home_id: string; listingId: string }>("/v1/saved-homes", {
+  return request("/v1/saved-homes", {
     method: "POST",
-    token,
-    body: { listingId }
+    headers: authHeaders(token),
+    body: JSON.stringify({ listingId }),
   });
 }
 
 export function removeSavedHome(token: string, listingId: string) {
-  return request<{ deleted: boolean; listingId: string }>(`/v1/saved-homes/${listingId}`, {
-    method: "DELETE",
-    token
-  });
-}
-
-export function listSavedHomes(token: string) {
-  return request<{ items: ListingSummary[]; nextCursor: string | null }>("/v1/saved-homes", {
-    method: "GET",
-    token
-  });
+  return request(`/v1/saved-homes/${listingId}`, { method: "DELETE", headers: authHeaders(token) });
 }
 
 export function contactAgent(token: string, listingId: string, message: string) {
-  return request<{ leadId: string; status: string }>(`/v1/listings/${listingId}/contact-agent`, {
+  return request(`/v1/listings/${listingId}/contact-agent`, {
     method: "POST",
-    token,
-    body: { message, contactPreference: "message" }
+    headers: authHeaders(token),
+    body: JSON.stringify({ message }),
   });
 }
 
 export function requestTour(token: string, listingId: string, preferredWindows: string[]) {
-  return request<{ tourRequestId: string; status: string }>(`/v1/listings/${listingId}/tour-requests`, {
+  return request(`/v1/listings/${listingId}/tour-requests`, {
     method: "POST",
-    token,
-    body: { preferredWindows }
+    headers: authHeaders(token),
+    body: JSON.stringify({ preferredWindows }),
   });
 }
 
 export function listInboxLeads(token: string) {
-  return request<{ items: Array<{ leadId: string; leadType: string; status: string; listingId: string }> }>("/v1/me/leads", {
-    method: "GET",
-    token
-  });
+  return request("/v1/me/leads", { headers: authHeaders(token) });
 }

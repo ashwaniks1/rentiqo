@@ -8,6 +8,7 @@ export type ListingSummary = {
   city: string;
   state: string;
   status: ListingStatus;
+  propertyType?: string;
 };
 
 export type ListingDetail = ListingSummary & {

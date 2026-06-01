@@ -1,45 +1,97 @@
-import { useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Pressable } from "react-native";
+import { colors, typography, spacing, radii, shadows } from "../theme";
+import { EmptyState } from "../components";
 import { useAppState } from "../state/app-state";
 
+type LeadItem = {
+  leadId: string;
+  listingId: string;
+  leadType: string;
+  status: string;
+  createdAt?: string;
+};
+
+function statusBadgeColor(status: string): string {
+  switch (status) {
+    case "new": return colors.primary;
+    case "acknowledged": return colors.warning;
+    case "in_progress": return colors.secondary;
+    case "closed": return colors.gray400;
+    default: return colors.gray500;
+  }
+}
+
+function formatLeadType(type: string): string {
+  return type === "tour_request" ? "Tour Request" : "Contact Request";
+}
+
 export function InboxScreen() {
-  const { session, leads, loading, error, refreshInbox } = useAppState();
+  const { leads, refreshInbox, loading } = useAppState();
 
   useEffect(() => {
-    if (session) {
-      void refreshInbox();
-    }
-  }, [session]);
+    refreshInbox();
+  }, []);
 
-  if (!session) {
+  if (loading && leads.length === 0) {
     return (
-      <View style={{ flex: 1, padding: 20, gap: 10 }}>
-        <Text style={{ fontSize: 24, fontWeight: "700" }}>Inbox</Text>
-        <Text>Sign in to view contact and tour updates.</Text>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
+  if (leads.length === 0) {
+    return (
+      <EmptyState
+        icon="📬"
+        title="No messages yet"
+        message="When you contact agents or request tours, updates will appear here"
+      />
+    );
+  }
+
   return (
-    <View style={{ flex: 1, padding: 20, gap: 10 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Inbox</Text>
-      <Pressable
-        onPress={() => void refreshInbox()}
-        style={{ borderWidth: 1, borderColor: "#d1d5db", padding: 10, borderRadius: 8 }}
-      >
-        <Text style={{ textAlign: "center" }}>Refresh Inbox</Text>
-      </Pressable>
-      {loading ? <Text>Loading...</Text> : null}
-      {error ? <Text style={{ color: "#b91c1c" }}>Error: {error}</Text> : null}
-      {leads.length === 0 ? (
-        <Text>No lead updates yet.</Text>
-      ) : (
-        leads.map((lead) => (
-          <Text key={lead.leadId}>
-            • {lead.leadType} for {lead.listingId} ({lead.status})
-          </Text>
-        ))
-      )}
+    <View style={styles.container}>
+      <FlatList
+        data={leads as LeadItem[]}
+        keyExtractor={(item) => item.leadId}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <Pressable style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.leadType}>{formatLeadType(item.leadType)}</Text>
+              <View style={[styles.badge, { backgroundColor: statusBadgeColor(item.status) }]}>
+                <Text style={styles.badgeText}>{item.status.replace("_", " ")}</Text>
+              </View>
+            </View>
+            <Text style={styles.listingRef}>Listing: {item.listingId}</Text>
+            {item.createdAt && (
+              <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+            )}
+          </Pressable>
+        )}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  list: { padding: spacing.lg },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.sm,
+  },
+  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  leadType: { ...typography.bodyBold, color: colors.textPrimary },
+  badge: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radii.sm },
+  badgeText: { ...typography.captionBold, color: colors.white, textTransform: "capitalize" },
+  listingRef: { ...typography.body, color: colors.textSecondary, marginTop: spacing.sm },
+  date: { ...typography.caption, color: colors.textMuted, marginTop: spacing.xs },
+});

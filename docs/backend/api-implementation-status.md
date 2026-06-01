@@ -74,6 +74,6 @@ Status keys:
 
 ## Remaining hardening work
 
-1. Replace plaintext password handling with salted hashing + secure credential lifecycle.
+1. ~~Replace plaintext password handling with salted hashing + secure credential lifecycle.~~ **Done** — bcrypt (12 rounds) via `bcryptjs`.
 2. Move login lockout/session revocation controls to a distributed policy store for multi-instance deployments.
 3. Add explicit API schema contract tests and staging smoke evidence capture in CI.

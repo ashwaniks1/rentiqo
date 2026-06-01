@@ -8,7 +8,8 @@ const listingIndex: ListingSummary[] = [
     baths: 2,
     city: "Austin",
     state: "TX",
-    status: "active"
+    status: "active",
+    propertyType: "single_family"
   },
   {
     listingId: "listing-1002",
@@ -17,7 +18,8 @@ const listingIndex: ListingSummary[] = [
     baths: 3,
     city: "Austin",
     state: "TX",
-    status: "active"
+    status: "active",
+    propertyType: "single_family"
   },
   {
     listingId: "listing-1003",
@@ -26,7 +28,8 @@ const listingIndex: ListingSummary[] = [
     baths: 2,
     city: "Round Rock",
     state: "TX",
-    status: "pending"
+    status: "pending",
+    propertyType: "condo"
   }
 ];
 

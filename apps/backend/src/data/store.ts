@@ -1,4 +1,7 @@
+import bcrypt from "bcryptjs";
 import type { ListingDetail, ListingSummary, ListingStatus, SearchFilters } from "@rentiqo/contracts";
+
+const SEED_BCRYPT_ROUNDS = 4;
 
 export type Role = "consumer" | "agent" | "admin";
 
@@ -114,16 +117,18 @@ function createListingSummary(listing: ListingRecord): ListingSummary {
     baths: listing.baths,
     city: listing.city,
     state: listing.state,
-    status: listing.status
+    status: listing.status,
+    propertyType: listing.propertyType
   };
 }
 
 function seedUsers() {
+  const hashedPassword = bcrypt.hashSync("password123", SEED_BCRYPT_ROUNDS);
   const seedUsersData: UserRecord[] = [
     {
       userId: "user-0001",
       email: "buyer@rentiqo.dev",
-      password: "password123",
+      password: hashedPassword,
       role: "consumer",
       preferences: {
         notifications: { push: true, email: true },
@@ -133,7 +138,7 @@ function seedUsers() {
     {
       userId: "agent-0001",
       email: "agent@rentiqo.dev",
-      password: "password123",
+      password: hashedPassword,
       role: "agent",
       preferences: {
         notifications: { push: true, email: true },
@@ -143,7 +148,7 @@ function seedUsers() {
     {
       userId: "admin-0001",
       email: "admin@rentiqo.dev",
-      password: "password123",
+      password: hashedPassword,
       role: "admin",
       preferences: {
         notifications: { push: true, email: true },

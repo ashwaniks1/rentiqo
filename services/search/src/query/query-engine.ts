@@ -16,6 +16,11 @@ function applyFilters(listings: ListingSummary[], filters: SearchFilters | undef
     if (filters?.minBaths !== undefined && listing.baths < filters.minBaths) {
       return false;
     }
+    if (filters?.propertyTypes && filters.propertyTypes.length > 0) {
+      if (!listing.propertyType || !filters.propertyTypes.includes(listing.propertyType)) {
+        return false;
+      }
+    }
     return true;
   });
 }

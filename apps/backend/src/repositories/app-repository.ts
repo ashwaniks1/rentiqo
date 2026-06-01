@@ -477,7 +477,7 @@ class PostgresRepository {
 
   async listListingSummaries(): Promise<ListingSummary[]> {
     const result = await this.pool.query(
-      "select listing_id, price, beds, baths, city, state, status from listings order by listing_id asc"
+      "select listing_id, price, beds, baths, city, state, status, property_type from listings order by listing_id asc"
     );
     return result.rows.map((row) => ({
       listingId: String(row.listing_id),
@@ -486,7 +486,8 @@ class PostgresRepository {
       baths: Number(row.baths),
       city: String(row.city),
       state: String(row.state),
-      status: String(row.status) as ListingSummary["status"]
+      status: String(row.status) as ListingSummary["status"],
+      propertyType: row.property_type ? String(row.property_type) : undefined
     }));
   }
 

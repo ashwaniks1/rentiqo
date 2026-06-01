@@ -11,11 +11,12 @@ function boot() {
     clickedListingId: searchResults.items[0]?.listingId
   });
   const alertMatches = evaluateAlertMatches(
-    [{ savedSearchId: "saved-1", userId: "user-1", queryFingerprint: "austin-3br" }],
+    [{ savedSearchId: "saved-1", userId: "user-1", queryFingerprint: "austin-3br", criteria: { maxPrice: 500000, city: "Austin" } }],
     {
       listingId: searchResults.items[0]?.listingId ?? "unknown",
       changedFields: ["price"],
-      changedAt: new Date().toISOString()
+      changedAt: new Date().toISOString(),
+      listing: searchResults.items[0]
     }
   );
 

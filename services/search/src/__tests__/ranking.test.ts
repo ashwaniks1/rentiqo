@@ -40,3 +40,25 @@ test("query engine applies filters and exposes ranking version", () => {
   assert.equal(result.items.every((item) => item.city === "Austin"), true);
   assert.equal(result.rankingVersion, SEARCH_RANKING_VERSION);
 });
+
+test("query engine filters by propertyTypes", () => {
+  const listings = [
+    { listingId: "sf1", price: 400000, beds: 3, baths: 2, city: "Austin", state: "TX", status: "active" as const, propertyType: "single_family" },
+    { listingId: "condo1", price: 300000, beds: 2, baths: 1, city: "Austin", state: "TX", status: "active" as const, propertyType: "condo" },
+    { listingId: "th1", price: 350000, beds: 3, baths: 2, city: "Austin", state: "TX", status: "active" as const, propertyType: "townhouse" }
+  ];
+
+  const result = executeSearch({ filters: { propertyTypes: ["condo", "townhouse"] } }, listings);
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items.every((item) => item.propertyType === "condo" || item.propertyType === "townhouse"), true);
+});
+
+test("query engine returns all listings when propertyTypes is empty", () => {
+  const listings = [
+    { listingId: "sf1", price: 400000, beds: 3, baths: 2, city: "Austin", state: "TX", status: "active" as const, propertyType: "single_family" },
+    { listingId: "condo1", price: 300000, beds: 2, baths: 1, city: "Austin", state: "TX", status: "active" as const, propertyType: "condo" }
+  ];
+
+  const result = executeSearch({ filters: { propertyTypes: [] } }, listings);
+  assert.equal(result.items.length, 2);
+});
