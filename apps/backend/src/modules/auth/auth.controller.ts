@@ -1,7 +1,10 @@
+import bcrypt from "bcryptjs";
 import type { Role } from "../../data/store.js";
 import { HttpError } from "../../http/errors.js";
 import type { AuthContext } from "../../http/types.js";
 import { getRepository } from "../../repositories/app-repository.js";
+
+const BCRYPT_ROUNDS = 12;
 
 const MIN_PASSWORD_LENGTH = 8;
 const LOCKOUT_THRESHOLD = 5;
@@ -126,7 +129,8 @@ export async function registerUser(body: unknown): Promise<AuthPayload> {
   }
 
   const role = payload.role === "agent" || payload.role === "admin" ? payload.role : "consumer";
-  const created = await repository.createUser(email, payload.password, role);
+  const hashedPassword = await bcrypt.hash(payload.password, BCRYPT_ROUNDS);
+  const created = await repository.createUser(email, hashedPassword, role);
   const session = await repository.createSession(created.userId);
   return toAuthPayload(created.userId, session.accessToken, session.refreshToken);
 }
@@ -151,7 +155,8 @@ export async function loginUser(body: unknown): Promise<AuthPayload> {
     throw new HttpError(401, "INVALID_CREDENTIALS", "Invalid credentials");
   }
 
-  if (user.password !== payload.password) {
+  const passwordValid = await bcrypt.compare(payload.password, user.password);
+  if (!passwordValid) {
     const locked = trackFailedLogin(email);
     if (locked) {
       throw new HttpError(429, "ACCOUNT_LOCKED", "Too many failed login attempts", {
