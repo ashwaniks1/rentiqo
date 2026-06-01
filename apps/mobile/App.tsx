@@ -1,14 +1,13 @@
-import { SafeAreaView, StatusBar } from "react-native";
+import React from "react";
+import { StatusBar } from "react-native";
 import { AppStateProvider } from "./src/state/app-state";
 import { RootNavigator } from "./src/navigation/root-navigator";
 
 export default function App() {
   return (
     <AppStateProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <StatusBar barStyle="dark-content" />
-        <RootNavigator />
-      </SafeAreaView>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <RootNavigator />
     </AppStateProvider>
   );
 }

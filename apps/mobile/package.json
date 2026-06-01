@@ -10,10 +10,16 @@
     "test:staging-e2e": "tsx e2e/staging-mobile-smoke.ts"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-navigation/bottom-tabs": "^7.16.2",
+    "@react-navigation/native": "^7.2.5",
+    "@react-navigation/native-stack": "^7.16.0",
     "@rentiqo/contracts": "file:../../packages/contracts",
     "expo": "^54.0.21",
     "react": "^19.2.0",
-    "react-native": "^0.82.0"
+    "react-native": "^0.82.0",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.2",

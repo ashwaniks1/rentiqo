@@ -1,186 +1,214 @@
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ListingDetail, ListingSummary } from "@rentiqo/contracts";
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import * as apiClient from "../api/client";
+import * as api from "../api/client";
 
-type SessionUser = {
-  userId: string;
-  email: string;
-  role: "consumer" | "agent" | "admin";
+type UserSession = {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    userId: string;
+    email: string;
+    role: string;
+    preferences: {
+      notifications: { push: boolean; email: boolean };
+      search: Record<string, unknown>;
+    };
+  };
 };
 
-type AppState = {
-  session: { accessToken: string; refreshToken: string; user: SessionUser } | null;
+type Lead = {
+  leadId: string;
+  listingId: string;
+  leadType: string;
+  status: string;
+  createdAt?: string;
+};
+
+type AppStateValue = {
+  session: UserSession | null;
   searchResults: ListingSummary[];
   selectedListing: ListingDetail | null;
   savedHomes: ListingSummary[];
-  leads: Array<{ leadId: string; leadType: string; status: string; listingId: string }>;
+  leads: Lead[];
   loading: boolean;
   error: string | null;
-  loginAsDemoBuyer: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  loadSearch: () => Promise<void>;
+  loadSearch: (query?: string, propertyType?: string) => Promise<void>;
   selectListing: (listingId: string) => Promise<void>;
   refreshSavedHomes: () => Promise<void>;
   toggleSaveListing: (listingId: string) => Promise<void>;
-  contactAgentForSelectedListing: () => Promise<void>;
-  requestTourForSelectedListing: () => Promise<void>;
+  contactAgent: (listingId: string) => Promise<void>;
+  requestTour: (listingId: string) => Promise<void>;
   refreshInbox: () => Promise<void>;
 };
 
-const AppStateContext = createContext<AppState | undefined>(undefined);
+const AppStateContext = createContext<AppStateValue | null>(null);
 
-export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AppState["session"]>(null);
+export function useAppState(): AppStateValue {
+  const ctx = useContext(AppStateContext);
+  if (!ctx) throw new Error("useAppState must be used within AppStateProvider");
+  return ctx;
+}
+
+export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<UserSession | null>(null);
   const [searchResults, setSearchResults] = useState<ListingSummary[]>([]);
   const [selectedListing, setSelectedListing] = useState<ListingDetail | null>(null);
   const [savedHomes, setSavedHomes] = useState<ListingSummary[]>([]);
-  const [leads, setLeads] = useState<AppState["leads"]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const execute = async (work: () => Promise<void>) => {
+  const getToken = useCallback(() => session?.accessToken ?? "", [session]);
+
+  const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      await work();
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unexpected error");
+      const result = await api.loginUser(email, password);
+      setSession(result as UserSession);
+    } catch (e: any) {
+      setError(e?.message ?? "Login failed");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loginAsDemoBuyer = async () => {
-    await execute(async () => {
-      const sessionPayload = await apiClient.login("buyer@rentiqo.dev", "password123");
-      setSession({
-        accessToken: sessionPayload.accessToken,
-        refreshToken: sessionPayload.refreshToken,
-        user: sessionPayload.user
-      });
-    });
-  };
-
-  const loadSearch = async () => {
-    if (!session) {
-      return;
+  const register = useCallback(async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.registerUser(email, password);
+      setSession(result as UserSession);
+    } catch (e: any) {
+      setError(e?.message ?? "Registration failed");
+    } finally {
+      setLoading(false);
     }
-    await execute(async () => {
-      const result = await apiClient.searchListings(session.accessToken, { query: "Austin", filters: { minBeds: 2 } });
-      setSearchResults(result.items);
-      if (result.items[0]) {
-        const detail = await apiClient.getListingDetail(session.accessToken, result.items[0].listingId);
-        setSelectedListing(detail);
-      }
-    });
-  };
+  }, []);
 
-  const selectListing = async (listingId: string) => {
-    if (!session) {
-      return;
-    }
-    await execute(async () => {
-      const detail = await apiClient.getListingDetail(session.accessToken, listingId);
-      setSelectedListing(detail);
-    });
-  };
-
-  const refreshSavedHomes = async () => {
-    if (!session) {
-      return;
-    }
-    await execute(async () => {
-      const result = await apiClient.listSavedHomes(session.accessToken);
-      setSavedHomes(result.items);
-    });
-  };
-
-  const toggleSaveListing = async (listingId: string) => {
-    if (!session) {
-      return;
-    }
-    await execute(async () => {
-      const alreadySaved = savedHomes.some((home) => home.listingId === listingId);
-      if (alreadySaved) {
-        await apiClient.removeSavedHome(session.accessToken, listingId);
-      } else {
-        await apiClient.saveHome(session.accessToken, listingId);
-      }
-      const refreshed = await apiClient.listSavedHomes(session.accessToken);
-      setSavedHomes(refreshed.items);
-    });
-  };
-
-  const contactAgentForSelectedListing = async () => {
-    if (!session || !selectedListing) {
-      return;
-    }
-    await execute(async () => {
-      await apiClient.contactAgent(session.accessToken, selectedListing.listingId, "Interested in this property.");
-      const inbox = await apiClient.listInboxLeads(session.accessToken);
-      setLeads(inbox.items);
-    });
-  };
-
-  const requestTourForSelectedListing = async () => {
-    if (!session || !selectedListing) {
-      return;
-    }
-    await execute(async () => {
-      await apiClient.requestTour(session.accessToken, selectedListing.listingId, ["Saturday 10:00-12:00"]);
-      const inbox = await apiClient.listInboxLeads(session.accessToken);
-      setLeads(inbox.items);
-    });
-  };
-
-  const refreshInbox = async () => {
-    if (!session) {
-      return;
-    }
-    await execute(async () => {
-      const inbox = await apiClient.listInboxLeads(session.accessToken);
-      setLeads(inbox.items);
-    });
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setSession(null);
     setSearchResults([]);
     setSelectedListing(null);
     setSavedHomes([]);
     setLeads([]);
     setError(null);
-  };
+  }, []);
 
-  const value = useMemo(
-    () => ({
-      session,
-      searchResults,
-      selectedListing,
-      savedHomes,
-      leads,
-      loading,
-      error,
-      loginAsDemoBuyer,
-      logout,
-      loadSearch,
-      selectListing,
-      refreshSavedHomes,
-      toggleSaveListing,
-      contactAgentForSelectedListing,
-      requestTourForSelectedListing,
-      refreshInbox
-    }),
-    [session, searchResults, selectedListing, savedHomes, leads, loading, error]
-  );
+  const loadSearch = useCallback(async (query?: string, propertyType?: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filters: Record<string, unknown> = { minBeds: 1 };
+      if (propertyType) filters.propertyTypes = [propertyType];
+      const result = await api.searchListings(getToken(), query ?? "", filters);
+      setSearchResults((result as { items: ListingSummary[] }).items ?? []);
+    } catch (e: any) {
+      setError(e?.message ?? "Search failed");
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
+
+  const selectListing = useCallback(async (listingId: string) => {
+    setLoading(true);
+    try {
+      const result = await api.getListingDetail(getToken(), listingId);
+      setSelectedListing(result as ListingDetail);
+    } catch {
+      setSelectedListing(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
+
+  const refreshSavedHomes = useCallback(async () => {
+    if (!session) return;
+    setLoading(true);
+    try {
+      const result = await api.listSavedHomes(getToken());
+      setSavedHomes((result as { items: ListingSummary[] }).items ?? []);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }, [session, getToken]);
+
+  const toggleSaveListing = useCallback(async (listingId: string) => {
+    if (!session) return;
+    const isSaved = savedHomes.some((l) => l.listingId === listingId);
+    try {
+      if (isSaved) {
+        await api.removeSavedHome(getToken(), listingId);
+        setSavedHomes((prev) => prev.filter((l) => l.listingId !== listingId));
+      } else {
+        await api.saveHome(getToken(), listingId);
+        await refreshSavedHomes();
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [session, savedHomes, getToken, refreshSavedHomes]);
+
+  const contactAgent = useCallback(async (listingId: string) => {
+    if (!session) return;
+    try {
+      await api.contactAgent(getToken(), listingId, "Interested in this property.");
+      await refreshInboxInternal();
+    } catch {
+      /* ignore */
+    }
+  }, [session, getToken]);
+
+  const requestTour = useCallback(async (listingId: string) => {
+    if (!session) return;
+    try {
+      await api.requestTour(getToken(), listingId, ["Saturday 10:00-12:00"]);
+      await refreshInboxInternal();
+    } catch {
+      /* ignore */
+    }
+  }, [session, getToken]);
+
+  async function refreshInboxInternal() {
+    if (!session) return;
+    try {
+      const result = await api.listInboxLeads(getToken());
+      setLeads((result as { items: Lead[] }).items ?? []);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const refreshInbox = useCallback(async () => {
+    setLoading(true);
+    await refreshInboxInternal();
+    setLoading(false);
+  }, [session, getToken]);
+
+  const value = useMemo<AppStateValue>(() => ({
+    session,
+    searchResults,
+    selectedListing,
+    savedHomes,
+    leads,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    loadSearch,
+    selectListing,
+    refreshSavedHomes,
+    toggleSaveListing,
+    contactAgent,
+    requestTour,
+    refreshInbox,
+  }), [session, searchResults, selectedListing, savedHomes, leads, loading, error, login, register, logout, loadSearch, selectListing, refreshSavedHomes, toggleSaveListing, contactAgent, requestTour, refreshInbox]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
-}
-
-export function useAppState() {
-  const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useAppState must be used within AppStateProvider");
-  }
-  return context;
 }

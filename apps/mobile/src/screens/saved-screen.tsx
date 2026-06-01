@@ -1,45 +1,58 @@
-import { useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useEffect } from "react";
+import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { colors, spacing } from "../theme";
+import { ListingCard, EmptyState } from "../components";
 import { useAppState } from "../state/app-state";
 
-export function SavedScreen() {
-  const { session, savedHomes, loading, error, refreshSavedHomes } = useAppState();
+export function SavedScreen({ navigation }: { navigation?: any }) {
+  const { savedHomes, refreshSavedHomes, loading, toggleSaveListing } = useAppState();
 
   useEffect(() => {
-    if (session) {
-      void refreshSavedHomes();
-    }
-  }, [session]);
+    refreshSavedHomes();
+  }, []);
 
-  if (!session) {
+  if (loading && savedHomes.length === 0) {
     return (
-      <View style={{ flex: 1, padding: 20, gap: 10 }}>
-        <Text style={{ fontSize: 24, fontWeight: "700" }}>Saved</Text>
-        <Text>Sign in to view saved homes.</Text>
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
+  if (savedHomes.length === 0) {
+    return (
+      <EmptyState
+        icon="♡"
+        title="No saved homes yet"
+        message="Save listings you're interested in and they'll appear here"
+        actionLabel="Discover homes"
+        onAction={() => navigation?.navigate?.("Discover")}
+      />
+    );
+  }
+
   return (
-    <View style={{ flex: 1, padding: 20, gap: 10 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Saved</Text>
-      <Pressable
-        onPress={() => void refreshSavedHomes()}
-        style={{ borderWidth: 1, borderColor: "#d1d5db", padding: 10, borderRadius: 8 }}
-      >
-        <Text style={{ textAlign: "center" }}>Refresh Saved Homes</Text>
-      </Pressable>
-      {loading ? <Text>Loading...</Text> : null}
-      {error ? <Text style={{ color: "#b91c1c" }}>Error: {error}</Text> : null}
-      {savedHomes.length === 0 ? (
-        <Text>No saved homes yet.</Text>
-      ) : (
-        savedHomes.map((home) => (
-          <Text key={home.listingId}>
-            • {home.listingId} - {home.city}, {home.state}
-          </Text>
-        ))
-      )}
+    <View style={styles.container}>
+      <FlatList
+        data={savedHomes}
+        keyExtractor={(item) => item.listingId}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <ListingCard
+            listing={item}
+            onPress={() => navigation?.navigate?.("Discover", { screen: "ListingDetail", params: { listingId: item.listingId } })}
+            saved
+            onToggleSave={() => toggleSaveListing(item.listingId)}
+          />
+        )}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  list: { padding: spacing.lg },
+});

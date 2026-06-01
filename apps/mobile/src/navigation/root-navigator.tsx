@@ -1,58 +1,62 @@
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, typography } from "../theme";
+import { useAppState } from "../state/app-state";
+import { AuthScreen } from "../screens/auth-screen";
 import { DiscoverScreen } from "../screens/discover-screen";
+import { ListingDetailScreen } from "../screens/listing-detail-screen";
+import { SavedScreen } from "../screens/saved-screen";
 import { InboxScreen } from "../screens/inbox-screen";
 import { ProfileScreen } from "../screens/profile-screen";
-import { SavedScreen } from "../screens/saved-screen";
 
-type TabKey = "discover" | "saved" | "inbox" | "profile";
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-const tabs: Array<{ key: TabKey; label: string }> = [
-  { key: "discover", label: "Discover" },
-  { key: "saved", label: "Saved" },
-  { key: "inbox", label: "Inbox" },
-  { key: "profile", label: "Profile" }
-];
+function DiscoverStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="DiscoverList" component={DiscoverScreen} />
+      <Stack.Screen name="ListingDetail" component={ListingDetailScreen} />
+    </Stack.Navigator>
+  );
+}
 
-function renderScreen(activeTab: TabKey) {
-  switch (activeTab) {
-    case "discover":
-      return <DiscoverScreen />;
-    case "saved":
-      return <SavedScreen />;
-    case "inbox":
-      return <InboxScreen />;
-    case "profile":
-      return <ProfileScreen />;
-    default:
-      return <DiscoverScreen />;
-  }
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.gray400,
+        tabBarLabelStyle: { ...typography.caption, marginBottom: 2 },
+        tabBarStyle: { paddingTop: 4, height: 56 },
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = "home-outline";
+          if (route.name === "Discover") iconName = "search-outline";
+          else if (route.name === "Saved") iconName = "heart-outline";
+          else if (route.name === "Inbox") iconName = "mail-outline";
+          else if (route.name === "Profile") iconName = "person-outline";
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Discover" component={DiscoverStack} />
+      <Tab.Screen name="Saved" component={SavedScreen} />
+      <Tab.Screen name="Inbox" component={InboxScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
 }
 
 export function RootNavigator() {
-  const [activeTab, setActiveTab] = useState<TabKey>("discover");
+  const { session } = useAppState();
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>{renderScreen(activeTab)}</View>
-      <View
-        style={{
-          flexDirection: "row",
-          borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
-          paddingVertical: 8,
-          paddingHorizontal: 10,
-          justifyContent: "space-between"
-        }}
-      >
-        {tabs.map((tab) => (
-          <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={{ padding: 8 }}>
-            <Text style={{ color: activeTab === tab.key ? "#111827" : "#6b7280", fontWeight: "600" }}>
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    </View>
+    <NavigationContainer>
+      {session ? <MainTabs /> : <AuthScreen />}
+    </NavigationContainer>
   );
 }

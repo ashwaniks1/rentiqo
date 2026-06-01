@@ -1,103 +1,146 @@
-import { useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TextInput, FlatList, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import type { ListingSummary } from "@rentiqo/contracts";
+import { colors, typography, spacing, radii } from "../theme";
+import { ListingCard, EmptyState } from "../components";
 import { useAppState } from "../state/app-state";
 
-export function DiscoverScreen() {
-  const {
-    session,
-    searchResults,
-    selectedListing,
-    savedHomes,
-    loading,
-    error,
-    loginAsDemoBuyer,
-    loadSearch,
-    selectListing,
-    toggleSaveListing,
-    contactAgentForSelectedListing,
-    requestTourForSelectedListing
-  } = useAppState();
+const FILTER_CHIPS = ["All", "Single Family", "Condo", "Townhouse"] as const;
+type FilterChip = typeof FILTER_CHIPS[number];
+
+const chipToPropertyType: Record<FilterChip, string | null> = {
+  "All": null,
+  "Single Family": "single_family",
+  "Condo": "condo",
+  "Townhouse": "townhouse",
+};
+
+export function DiscoverScreen({ navigation }: { navigation?: any }) {
+  const { searchResults, loadSearch, loading, savedHomes, toggleSaveListing } = useAppState();
+  const [query, setQuery] = useState("Austin");
+  const [activeFilter, setActiveFilter] = useState<FilterChip>("All");
 
   useEffect(() => {
-    if (session) {
-      void loadSearch();
-    }
-  }, [session]);
+    loadSearch(query, activeFilter === "All" ? undefined : chipToPropertyType[activeFilter] ?? undefined);
+  }, []);
 
-  const selectedListingId = selectedListing?.listingId;
-  const isSaved = selectedListingId ? savedHomes.some((home) => home.listingId === selectedListingId) : false;
-
-  if (!session) {
-    return (
-      <View style={{ flex: 1, padding: 20, gap: 16 }}>
-        <Text style={{ fontSize: 24, fontWeight: "700" }}>Discover</Text>
-        <Text>Sign in to search listings, save homes, and contact agents.</Text>
-        <Pressable
-          onPress={() => void loginAsDemoBuyer()}
-          style={{ backgroundColor: "#111827", padding: 12, borderRadius: 8 }}
-        >
-          <Text style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}>Sign in as Demo Buyer</Text>
-        </Pressable>
-        {error ? <Text style={{ color: "#b91c1c" }}>Error: {error}</Text> : null}
-      </View>
-    );
+  function handleSearch() {
+    loadSearch(query, activeFilter === "All" ? undefined : chipToPropertyType[activeFilter] ?? undefined);
   }
 
+  function handleFilterPress(chip: FilterChip) {
+    setActiveFilter(chip);
+    loadSearch(query, chip === "All" ? undefined : chipToPropertyType[chip] ?? undefined);
+  }
+
+  function handleListingPress(listing: ListingSummary) {
+    if (navigation?.navigate) {
+      navigation.navigate("ListingDetail", { listingId: listing.listingId });
+    }
+  }
+
+  const savedIds = new Set(savedHomes.map((l) => l.listingId));
+
   return (
-    <View style={{ flex: 1, padding: 20, gap: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Discover</Text>
-      <Text>Signed in as {session.user.email}</Text>
-      <Pressable onPress={() => void loadSearch()} style={{ borderWidth: 1, borderColor: "#d1d5db", padding: 10, borderRadius: 8 }}>
-        <Text style={{ textAlign: "center" }}>Refresh Search Results</Text>
-      </Pressable>
-      {loading ? <Text>Loading...</Text> : null}
-      {error ? <Text style={{ color: "#b91c1c" }}>Error: {error}</Text> : null}
-      {searchResults.length === 0 && !loading ? <Text>No listings found for this query.</Text> : null}
-      {searchResults.map((listing) => (
-        <Pressable
-          key={listing.listingId}
-          onPress={() => void selectListing(listing.listingId)}
-          style={{
-            borderWidth: 1,
-            borderColor: selectedListingId === listing.listingId ? "#111827" : "#d1d5db",
-            borderRadius: 8,
-            padding: 10
-          }}
-        >
-          <Text style={{ fontWeight: "600" }}>
-            {listing.city}, {listing.state} - ${listing.price.toLocaleString()}
-          </Text>
-          <Text>
-            {listing.beds} bd / {listing.baths} ba
-          </Text>
+    <View style={styles.container}>
+      <View style={styles.searchRow}>
+        <TextInput
+          style={styles.searchInput}
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={handleSearch}
+          placeholder="Search by city or state..."
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="search"
+          accessibilityLabel="Search location"
+        />
+        <Pressable onPress={handleSearch} style={styles.searchButton} accessibilityLabel="Search">
+          <Text style={styles.searchButtonText}>🔍</Text>
         </Pressable>
-      ))}
-      {selectedListing ? (
-        <View style={{ borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 12, gap: 8 }}>
-          <Text style={{ fontWeight: "700" }}>Selected Listing: {selectedListing.listingId}</Text>
-          <Text>{selectedListing.description ?? "No description available."}</Text>
+      </View>
+
+      <View style={styles.filterRow}>
+        {FILTER_CHIPS.map((chip) => (
           <Pressable
-            style={{ backgroundColor: "#111827", padding: 12, borderRadius: 8 }}
-            onPress={() => selectedListingId && void toggleSaveListing(selectedListingId)}
+            key={chip}
+            onPress={() => handleFilterPress(chip)}
+            style={[styles.chip, activeFilter === chip && styles.chipActive]}
+            accessibilityRole="button"
           >
-            <Text style={{ color: "#ffffff", textAlign: "center", fontWeight: "600" }}>
-              {isSaved ? "Remove from Saved" : "Save Home"}
-            </Text>
+            <Text style={[styles.chipText, activeFilter === chip && styles.chipTextActive]}>{chip}</Text>
           </Pressable>
-          <Pressable
-            style={{ backgroundColor: "#2563eb", padding: 12, borderRadius: 8 }}
-            onPress={() => void contactAgentForSelectedListing()}
-          >
-            <Text style={{ color: "#ffffff", textAlign: "center", fontWeight: "600" }}>Contact Agent</Text>
-          </Pressable>
-          <Pressable
-            style={{ backgroundColor: "#059669", padding: 12, borderRadius: 8 }}
-            onPress={() => void requestTourForSelectedListing()}
-          >
-            <Text style={{ color: "#ffffff", textAlign: "center", fontWeight: "600" }}>Request Tour</Text>
-          </Pressable>
+        ))}
+      </View>
+
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Searching listings...</Text>
         </View>
-      ) : null}
+      ) : searchResults.length === 0 ? (
+        <EmptyState
+          icon="🏠"
+          title="No listings found"
+          message="Try adjusting your search or filters"
+          actionLabel="Clear filters"
+          onAction={() => { setActiveFilter("All"); setQuery(""); loadSearch(""); }}
+        />
+      ) : (
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.listingId}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <ListingCard
+              listing={item}
+              onPress={() => handleListingPress(item)}
+              saved={savedIds.has(item.listingId)}
+              onToggleSave={() => toggleSaveListing(item.listingId)}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface },
+  searchRow: { flexDirection: "row", padding: spacing.lg, paddingBottom: spacing.sm, gap: spacing.sm },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    ...typography.body,
+    color: colors.textPrimary,
+    backgroundColor: colors.white,
+  },
+  searchButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.lg,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchButtonText: { fontSize: 18 },
+  filterRow: { flexDirection: "row", paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.sm },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.full,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipText: { ...typography.caption, color: colors.textSecondary },
+  chipTextActive: { color: colors.white },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  loadingText: { ...typography.body, color: colors.textMuted, marginTop: spacing.md },
+  listContent: { padding: spacing.lg },
+});
